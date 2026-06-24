@@ -23,7 +23,7 @@ export default function Staff() {
   // Form State
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', password: '', role: 'Receptionist',
-    available_timings: [{ day: 'Monday', start: '09:00', end: '17:00' }]
+    available_timings: [{ days: ['Monday'], start: '09:00', end: '17:00' }]
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -51,14 +51,23 @@ export default function Staff() {
   };
 
   const handleTimingChange = (index, field, value, isEdit = false) => {
-    if (isEdit) {
-      const newTimings = [...editFormData.available_timings];
-      newTimings[index][field] = value;
-      setEditFormData({ ...editFormData, available_timings: newTimings });
+    const data = isEdit ? editFormData : formData;
+    const newTimings = [...data.available_timings];
+    if (field === 'day') {
+      const daysArray = newTimings[index].days || [];
+      if (daysArray.includes(value)) {
+        newTimings[index].days = daysArray.filter(d => d !== value);
+      } else {
+        newTimings[index].days = [...daysArray, value];
+      }
     } else {
-      const newTimings = [...formData.available_timings];
       newTimings[index][field] = value;
-      setFormData({ ...formData, available_timings: newTimings });
+    }
+    
+    if (isEdit) {
+      setEditFormData({ ...data, available_timings: newTimings });
+    } else {
+      setFormData({ ...data, available_timings: newTimings });
     }
   };
 
@@ -66,12 +75,12 @@ export default function Staff() {
     if (isEdit) {
       setEditFormData({ 
         ...editFormData, 
-        available_timings: [...editFormData.available_timings, { day: 'Monday', start: '09:00', end: '17:00' }] 
+        available_timings: [...editFormData.available_timings, { days: ['Monday'], start: '09:00', end: '17:00' }] 
       });
     } else {
       setFormData({ 
         ...formData, 
-        available_timings: [...formData.available_timings, { day: 'Monday', start: '09:00', end: '17:00' }] 
+        available_timings: [...formData.available_timings, { days: ['Monday'], start: '09:00', end: '17:00' }] 
       });
     }
   };
@@ -93,7 +102,7 @@ export default function Staff() {
       setShowModal(false);
       setFormData({
         name: '', email: '', phone: '', password: '', role: 'Receptionist',
-        available_timings: [{ day: 'Monday', start: '09:00', end: '17:00' }]
+        available_timings: [{ days: ['Monday'], start: '09:00', end: '17:00' }]
       });
       fetchStaff();
     } catch (error) {
@@ -111,7 +120,7 @@ export default function Staff() {
       role: member.role,
       available_timings: member.available_timings && member.available_timings.length > 0 
         ? member.available_timings 
-        : [{ day: 'Monday', start: '09:00', end: '17:00' }]
+        : [{ days: ['Monday'], start: '09:00', end: '17:00' }]
     });
     setShowEditModal(true);
   };
@@ -298,21 +307,24 @@ export default function Staff() {
                           <div key={index} className="flex flex-col space-y-2 p-3 border border-gray-100 bg-gray-50 rounded-lg">
                             <div className="flex justify-between items-center">
                               <div className="flex space-x-1">
-                                {DAYS.map(d => (
-                                  <button
-                                    key={d.full}
-                                    type="button"
-                                    onClick={() => handleTimingChange(index, 'day', d.full, false)}
-                                    className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
-                                      slot.day === d.full 
-                                        ? 'bg-primary-600 text-white shadow-md' 
-                                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
-                                    }`}
-                                    title={d.full}
-                                  >
-                                    {d.label}
-                                  </button>
-                                ))}
+                                {DAYS.map(d => {
+                                  const isSelected = slot.days && slot.days.includes(d.full);
+                                  return (
+                                    <button
+                                      key={d.full}
+                                      type="button"
+                                      onClick={() => handleTimingChange(index, 'day', d.full, false)}
+                                      className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
+                                        isSelected 
+                                          ? 'bg-primary-600 text-white shadow-md' 
+                                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                                      }`}
+                                      title={d.full}
+                                    >
+                                      {d.label}
+                                    </button>
+                                  );
+                                })}
                               </div>
                               {formData.available_timings.length > 1 && (
                                 <button 
@@ -407,21 +419,24 @@ export default function Staff() {
                           <div key={index} className="flex flex-col space-y-2 p-3 border border-gray-100 bg-gray-50 rounded-lg">
                             <div className="flex justify-between items-center">
                               <div className="flex space-x-1">
-                                {DAYS.map(d => (
-                                  <button
-                                    key={d.full}
-                                    type="button"
-                                    onClick={() => handleTimingChange(index, 'day', d.full, true)}
-                                    className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
-                                      slot.day === d.full 
-                                        ? 'bg-primary-600 text-white shadow-md' 
-                                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
-                                    }`}
-                                    title={d.full}
-                                  >
-                                    {d.label}
-                                  </button>
-                                ))}
+                                {DAYS.map(d => {
+                                  const isSelected = slot.days && slot.days.includes(d.full);
+                                  return (
+                                    <button
+                                      key={d.full}
+                                      type="button"
+                                      onClick={() => handleTimingChange(index, 'day', d.full, true)}
+                                      className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
+                                        isSelected 
+                                          ? 'bg-primary-600 text-white shadow-md' 
+                                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                                      }`}
+                                      title={d.full}
+                                    >
+                                      {d.label}
+                                    </button>
+                                  );
+                                })}
                               </div>
                               {editFormData.available_timings.length > 1 && (
                                 <button 

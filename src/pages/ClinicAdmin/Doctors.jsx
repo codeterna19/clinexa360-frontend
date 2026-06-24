@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Plus, User, Phone, Mail, MoreVertical, Briefcase, Eye, EyeOff } from 'lucide-react';
+import { Plus, User, Phone, Mail, MoreVertical, Briefcase, Eye, EyeOff, Edit, Trash2 } from 'lucide-react';
 
 const DAYS = [
   { label: 'Mo', full: 'Monday' },
@@ -18,11 +18,20 @@ export default function Doctors() {
   const [showModal, setShowModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  
   // Form State
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', password: '',
     qualification: '', specialization: '', registration_number: '', consultation_fee: '', 
-    available_timings: [{ day: 'Monday', start: '09:00', end: '17:00' }]
+    available_timings: [{ days: ['Monday'], start: '09:00', end: '17:00' }]
+  });
+
+  const [editFormData, setEditFormData] = useState({
+    _id: '', name: '', email: '', phone: '', password: '',
+    qualification: '', specialization: '', registration_number: '', consultation_fee: '', 
+    available_timings: []
   });
 
   useEffect(() => {
@@ -44,22 +53,91 @@ export default function Doctors() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleTimingChange = (index, field, value) => {
-    const newTimings = [...formData.available_timings];
-    newTimings[index][field] = value;
-    setFormData({ ...formData, available_timings: newTimings });
+  const handleTimingChange = (index, field, value, isEdit = false) => {
+    const data = isEdit ? editFormData : formData;
+    const newTimings = [...data.available_timings];
+    if (field === 'day') {
+      const daysArray = newTimings[index].days || [];
+      if (daysArray.includes(value)) {
+        newTimings[index].days = daysArray.filter(d => d !== value);
+      } else {
+        newTimings[index].days = [...daysArray, value];
+      }
+    } else {
+      newTimings[index][field] = value;
+    }
+    
+    if (isEdit) {
+      setEditFormData({ ...data, available_timings: newTimings });
+    } else {
+      setFormData({ ...data, available_timings: newTimings });
+    }
   };
 
-  const addTimingSlot = () => {
-    setFormData({ 
-      ...formData, 
-      available_timings: [...formData.available_timings, { day: 'Monday', start: '09:00', end: '17:00' }] 
+  const addTimingSlot = (isEdit = false) => {
+    if (isEdit) {
+      setEditFormData({ 
+        ...editFormData, 
+        available_timings: [...editFormData.available_timings, { days: ['Monday'], start: '09:00', end: '17:00' }] 
+      });
+    } else {
+      setFormData({ 
+        ...formData, 
+        available_timings: [...formData.available_timings, { days: ['Monday'], start: '09:00', end: '17:00' }] 
+      });
+    }
+  };
+
+  const removeTimingSlot = (index, isEdit = false) => {
+    if (isEdit) {
+      const newTimings = editFormData.available_timings.filter((_, i) => i !== index);
+      setEditFormData({ ...editFormData, available_timings: newTimings });
+    } else {
+      const newTimings = formData.available_timings.filter((_, i) => i !== index);
+      setFormData({ ...formData, available_timings: newTimings });
+    }
+  };
+
+  const handleEditClick = (doc) => {
+    setEditFormData({
+      _id: doc._id,
+      name: doc.name,
+      email: doc.email,
+      phone: doc.phone,
+      password: '',
+      qualification: doc.qualification,
+      specialization: doc.specialization,
+      registration_number: doc.registration_number,
+      consultation_fee: doc.consultation_fee,
+      available_timings: doc.available_timings && doc.available_timings.length > 0 
+        ? doc.available_timings 
+        : [{ days: ['Monday'], start: '09:00', end: '17:00' }]
     });
+    setShowEditModal(true);
   };
 
-  const removeTimingSlot = (index) => {
-    const newTimings = formData.available_timings.filter((_, i) => i !== index);
-    setFormData({ ...formData, available_timings: newTimings });
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = { ...editFormData };
+      if (!payload.password) delete payload.password;
+      await api.put(`/clinic-admin/doctors/${editFormData._id}`, payload);
+      setShowEditModal(false);
+      fetchDoctors();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error updating doctor');
+    }
+  };
+
+  const handleDeleteClick = async (id) => {
+    if (window.confirm('Are you sure you want to delete this doctor?')) {
+      try {
+        await api.delete(`/clinic-admin/doctors/${id}`);
+        fetchDoctors();
+      } catch (error) {
+        alert(error.response?.data?.message || 'Error deleting doctor');
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -70,7 +148,7 @@ export default function Doctors() {
       setFormData({
         name: '', email: '', phone: '', password: '',
         qualification: '', specialization: '', registration_number: '', consultation_fee: '', 
-        available_timings: [{ day: 'Monday', start: '09:00', end: '17:00' }]
+        available_timings: [{ days: ['Monday'], start: '09:00', end: '17:00' }]
       });
       fetchDoctors();
     } catch (error) {
@@ -144,9 +222,20 @@ export default function Doctors() {
                       ₹{doc.consultation_fee}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <MoreVertical size={20} />
-                      </button>
+                      <div className="flex justify-end space-x-2">
+                        <button 
+                          onClick={() => handleEditClick(doc)}
+                          className="px-3 py-1 rounded-md transition-colors bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center"
+                        >
+                          <Edit size={14} className="mr-1" /> Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClick(doc._id)}
+                          className="px-3 py-1 rounded-md transition-colors bg-red-50 text-red-600 hover:bg-red-100 flex items-center"
+                        >
+                          <Trash2 size={14} className="mr-1" /> Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -197,26 +286,29 @@ export default function Doctors() {
                           <div key={index} className="flex flex-col space-y-2 p-3 border border-gray-100 bg-gray-50 rounded-lg">
                             <div className="flex justify-between items-center">
                               <div className="flex space-x-1">
-                                {DAYS.map(d => (
-                                  <button
-                                    key={d.full}
-                                    type="button"
-                                    onClick={() => handleTimingChange(index, 'day', d.full)}
-                                    className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
-                                      slot.day === d.full 
-                                        ? 'bg-primary-600 text-white shadow-md' 
-                                        : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
-                                    }`}
-                                    title={d.full}
-                                  >
-                                    {d.label}
-                                  </button>
-                                ))}
+                                {DAYS.map(d => {
+                                  const isSelected = slot.days && slot.days.includes(d.full);
+                                  return (
+                                    <button
+                                      key={d.full}
+                                      type="button"
+                                      onClick={() => handleTimingChange(index, 'day', d.full, false)}
+                                      className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
+                                        isSelected 
+                                          ? 'bg-primary-600 text-white shadow-md' 
+                                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                                      }`}
+                                      title={d.full}
+                                    >
+                                      {d.label}
+                                    </button>
+                                  );
+                                })}
                               </div>
                               {formData.available_timings.length > 1 && (
                                 <button 
                                   type="button" 
-                                  onClick={() => removeTimingSlot(index)}
+                                  onClick={() => removeTimingSlot(index, false)}
                                   className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors font-bold"
                                   title="Remove slot"
                                 >
@@ -229,14 +321,14 @@ export default function Doctors() {
                               <input 
                                 type="time" 
                                 value={slot.start} 
-                                onChange={(e) => handleTimingChange(index, 'start', e.target.value)}
+                                onChange={(e) => handleTimingChange(index, 'start', e.target.value, false)}
                                 className="block w-1/2 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                               />
                               <span className="text-gray-500 text-sm font-medium">to</span>
                               <input 
                                 type="time" 
                                 value={slot.end} 
-                                onChange={(e) => handleTimingChange(index, 'end', e.target.value)}
+                                onChange={(e) => handleTimingChange(index, 'end', e.target.value, false)}
                                 className="block w-1/2 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                               />
                             </div>
@@ -251,6 +343,113 @@ export default function Doctors() {
                     Add Doctor
                   </button>
                   <button type="button" onClick={() => setShowModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Doctor Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">
+          <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Doctor</h3>
+              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={handleEditSubmit}>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label className="block text-sm font-medium text-gray-700">Full Name</label><input type="text" name="name" required value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Email</label><input type="email" name="email" required value={editFormData.email} onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Phone</label><input type="text" name="phone" required value={editFormData.phone} onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">New Password <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <div className="relative mt-1">
+                        <input type={showEditPassword ? "text" : "password"} name="password" value={editFormData.password} onChange={(e) => setEditFormData({...editFormData, password: e.target.value})} className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                        <button type="button" onClick={() => setShowEditPassword(!showEditPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
+                          {showEditPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    <div><label className="block text-sm font-medium text-gray-700">Specialization</label><input type="text" name="specialization" required value={editFormData.specialization} onChange={(e) => setEditFormData({...editFormData, specialization: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Qualification</label><input type="text" name="qualification" required value={editFormData.qualification} onChange={(e) => setEditFormData({...editFormData, qualification: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Registration Number</label><input type="text" name="registration_number" required value={editFormData.registration_number} onChange={(e) => setEditFormData({...editFormData, registration_number: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    <div><label className="block text-sm font-medium text-gray-700">Consultation Fee (₹)</label><input type="number" name="consultation_fee" required value={editFormData.consultation_fee} onChange={(e) => setEditFormData({...editFormData, consultation_fee: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                    
+                    <div className="col-span-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-sm font-medium text-gray-700">Available Timings</label>
+                        <button type="button" onClick={() => addTimingSlot(true)} className="text-sm text-primary-600 flex items-center hover:text-primary-700">
+                          <Plus size={14} className="mr-1" /> Add Slot
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        {editFormData.available_timings.map((slot, index) => (
+                          <div key={index} className="flex flex-col space-y-2 p-3 border border-gray-100 bg-gray-50 rounded-lg">
+                            <div className="flex justify-between items-center">
+                              <div className="flex space-x-1">
+                                {DAYS.map(d => {
+                                  const isSelected = slot.days && slot.days.includes(d.full);
+                                  return (
+                                    <button
+                                      key={d.full}
+                                      type="button"
+                                      onClick={() => handleTimingChange(index, 'day', d.full, true)}
+                                      className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
+                                        isSelected 
+                                          ? 'bg-primary-600 text-white shadow-md' 
+                                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                                      }`}
+                                      title={d.full}
+                                    >
+                                      {d.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {editFormData.available_timings.length > 1 && (
+                                <button 
+                                  type="button" 
+                                  onClick={() => removeTimingSlot(index, true)}
+                                  className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors font-bold"
+                                  title="Remove slot"
+                                >
+                                  &times;
+                                </button>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <input 
+                                type="time" 
+                                value={slot.start} 
+                                onChange={(e) => handleTimingChange(index, 'start', e.target.value, true)}
+                                className="block w-1/2 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                              />
+                              <span className="text-gray-500 text-sm font-medium">to</span>
+                              <input 
+                                type="time" 
+                                value={slot.end} 
+                                onChange={(e) => handleTimingChange(index, 'end', e.target.value, true)}
+                                className="block w-1/2 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                  </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 border-t rounded-b-xl">
+                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Save Changes
+                  </button>
+                  <button type="button" onClick={() => setShowEditModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel
                   </button>
                 </div>
