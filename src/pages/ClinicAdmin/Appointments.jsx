@@ -8,9 +8,14 @@ export default function Appointments() {
   
   // States for new appointment
   const [showModal, setShowModal] = useState(false);
+  const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   
+  const [newPatientData, setNewPatientData] = useState({
+    name: '', email: '', phone: '', gender: 'Male', dob: '', password: 'Patient@123'
+  });
+
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   
   const [formData, setFormData] = useState({
@@ -73,6 +78,25 @@ export default function Appointments() {
       });
     } catch (error) {
       alert(error.response?.data?.message || 'Error creating appointment');
+    }
+  };
+
+  const handleNewPatientSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await api.post('/patients', newPatientData);
+      
+      // Auto select the new patient
+      setFormData({ ...formData, patient_id: data._id });
+      
+      // Close modal and clear form
+      setShowNewPatientModal(false);
+      setNewPatientData({ name: '', email: '', phone: '', gender: 'Male', dob: '', password: 'Patient@123' });
+      
+      // Refresh patient list to include new patient in dropdown
+      await fetchPatientsAndDoctors();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error creating patient');
     }
   };
 
@@ -193,8 +217,17 @@ export default function Appointments() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Select Patient</label>
-                  <select name="patient_id" required value={formData.patient_id} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="block text-sm font-medium text-gray-700">Select Patient</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNewPatientModal(true)}
+                      className="text-xs text-primary-600 hover:text-primary-800 font-medium flex items-center"
+                    >
+                      <Plus size={12} className="mr-1" /> Quick Add Patient
+                    </button>
+                  </div>
+                  <select name="patient_id" required value={formData.patient_id} onChange={handleInputChange} className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
                     <option value="">-- Choose Patient --</option>
                     {patients.map(p => (
                       <option key={p._id} value={p._id}>{p.name} ({p.phone})</option>
@@ -240,6 +273,33 @@ export default function Appointments() {
                   <button type="submit" className="px-4 py-2 bg-primary-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                     Book Appointment
                   </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Add Patient Modal */}
+      {showNewPatientModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/60 p-4">
+          <div className="relative w-full max-w-md sm:max-w-lg md:max-w-xl bg-white rounded-xl shadow-xl flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b flex justify-between items-center shrink-0">
+              <h3 className="text-lg font-semibold text-gray-900">Quick Add Patient</h3>
+              <button onClick={() => setShowNewPatientModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div className="p-6 overflow-y-auto">
+              <form onSubmit={handleNewPatientSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><label className="block text-sm font-medium text-gray-700">Full Name</label><input type="text" required value={newPatientData.name} onChange={(e) => setNewPatientData({...newPatientData, name: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700">Email</label><input type="email" required value={newPatientData.email} onChange={(e) => setNewPatientData({...newPatientData, email: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700">Phone</label><input type="text" required value={newPatientData.phone} onChange={(e) => setNewPatientData({...newPatientData, phone: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700">Gender</label><select value={newPatientData.gender} onChange={(e) => setNewPatientData({...newPatientData, gender: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+                  <div><label className="block text-sm font-medium text-gray-700">Date of Birth</label><input type="date" required value={newPatientData.dob} onChange={(e) => setNewPatientData({...newPatientData, dob: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" /></div>
+                </div>
+                <div className="mt-6 border-t pt-4 flex justify-end space-x-3">
+                  <button type="button" onClick={() => setShowNewPatientModal(false)} className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Cancel</button>
+                  <button type="submit" className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">Save & Select</button>
                 </div>
               </form>
             </div>

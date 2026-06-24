@@ -1,5 +1,5 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, LogOut, CreditCard } from 'lucide-react';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, LogOut, CreditCard, UserPlus } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 
@@ -32,6 +32,10 @@ export default function ClinicAdminLayout() {
           <Link to="/clinic-admin/staff" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
             <Users size={20} />
             <span>Staff</span>
+          </Link>
+          <Link to="/clinic-admin/patients" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
+            <UserPlus size={20} />
+            <span>Patients</span>
           </Link>
           <Link to="/clinic-admin/appointments" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
             <Calendar size={20} />
