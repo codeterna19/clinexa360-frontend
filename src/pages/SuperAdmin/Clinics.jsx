@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../../api/axios';
-import { Plus, Building, MapPin, Phone, Mail, MoreVertical, Edit } from 'lucide-react';
+import AuthContext from '../../context/AuthContext';
+import { Plus, Building, MapPin, Phone, Mail, MoreVertical, Edit, Trash2 } from 'lucide-react';
 
 export default function Clinics() {
+  const { user } = useContext(AuthContext);
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -25,7 +27,11 @@ export default function Clinics() {
     name: '',
     address: '',
     phone: '',
-    email: ''
+    email: '',
+    adminName: '',
+    adminEmail: '',
+    adminPhone: '',
+    adminPassword: ''
   });
 
   useEffect(() => {
@@ -68,7 +74,11 @@ export default function Clinics() {
       name: clinic.name,
       address: clinic.address,
       phone: clinic.phone,
-      email: clinic.email
+      email: clinic.email,
+      adminName: clinic.adminName || clinic.admin?.name || '',
+      adminEmail: clinic.adminEmail || clinic.admin?.email || '',
+      adminPhone: clinic.adminPhone || clinic.admin?.phone || '',
+      adminPassword: ''
     });
     setShowEditModal(true);
   };
@@ -76,12 +86,19 @@ export default function Clinics() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/clinics/${editFormData._id}`, {
+      const payload = {
         name: editFormData.name,
         address: editFormData.address,
         phone: editFormData.phone,
-        email: editFormData.email
-      });
+        email: editFormData.email,
+        adminName: editFormData.adminName,
+        adminEmail: editFormData.adminEmail,
+        adminPhone: editFormData.adminPhone
+      };
+      if (editFormData.adminPassword) {
+        payload.adminPassword = editFormData.adminPassword;
+      }
+      await api.put(`/clinics/${editFormData._id}`, payload);
       setShowEditModal(false);
       fetchClinics();
     } catch (error) {
@@ -96,6 +113,17 @@ export default function Clinics() {
       fetchClinics();
     } catch (error) {
       alert(error.response?.data?.message || 'Error updating status');
+    }
+  };
+
+  const handleDeleteClinic = async (id) => {
+    if (window.confirm('Are you sure you want to delete this clinic? This action cannot be undone.')) {
+      try {
+        await api.delete(`/clinics/${id}`);
+        fetchClinics();
+      } catch (error) {
+        alert(error.response?.data?.message || 'Error deleting clinic');
+      }
     }
   };
 
@@ -186,6 +214,14 @@ export default function Clinics() {
                         >
                           {clinic.status === 'Active' ? 'Suspend' : 'Activate'}
                         </button>
+                        {['SuperAdmin', 'Admin'].includes(user?.role) && (
+                          <button 
+                            onClick={() => handleDeleteClinic(clinic._id)}
+                            className="px-3 py-1 rounded-md transition-colors bg-rose-50 text-rose-600 hover:bg-rose-100"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -286,6 +322,24 @@ export default function Clinics() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Clinic Email</label>
                       <input type="email" required value={editFormData.email} onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+
+                    <div className="col-span-2 mt-4"><h4 className="font-semibold text-gray-700 border-b pb-2">Clinic Administrator Details</h4></div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Admin Name</label>
+                      <input type="text" required value={editFormData.adminName} onChange={(e) => setEditFormData({...editFormData, adminName: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Admin Email</label>
+                      <input type="email" required value={editFormData.adminEmail} onChange={(e) => setEditFormData({...editFormData, adminEmail: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Admin Phone</label>
+                      <input type="text" required value={editFormData.adminPhone} onChange={(e) => setEditFormData({...editFormData, adminPhone: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Admin Password (Leave blank to keep unchanged)</label>
+                      <input type="password" value={editFormData.adminPassword} onChange={(e) => setEditFormData({...editFormData, adminPassword: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
                     </div>
                   </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 border-t rounded-b-xl">
