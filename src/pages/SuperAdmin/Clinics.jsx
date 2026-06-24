@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Plus, Building, MapPin, Phone, Mail, MoreVertical } from 'lucide-react';
+import { Plus, Building, MapPin, Phone, Mail, MoreVertical, Edit } from 'lucide-react';
 
 export default function Clinics() {
   const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -17,6 +18,14 @@ export default function Clinics() {
     adminEmail: '',
     adminPhone: '',
     adminPassword: ''
+  });
+
+  const [editFormData, setEditFormData] = useState({
+    _id: '',
+    name: '',
+    address: '',
+    phone: '',
+    email: ''
   });
 
   useEffect(() => {
@@ -50,6 +59,33 @@ export default function Clinics() {
       fetchClinics();
     } catch (error) {
       alert(error.response?.data?.message || 'Error creating clinic');
+    }
+  };
+
+  const handleEditClick = (clinic) => {
+    setEditFormData({
+      _id: clinic._id,
+      name: clinic.name,
+      address: clinic.address,
+      phone: clinic.phone,
+      email: clinic.email
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/clinics/${editFormData._id}`, {
+        name: editFormData.name,
+        address: editFormData.address,
+        phone: editFormData.phone,
+        email: editFormData.email
+      });
+      setShowEditModal(false);
+      fetchClinics();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error updating clinic');
     }
   };
 
@@ -133,16 +169,24 @@ export default function Clinics() {
                       {new Date(clinic.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => handleToggleStatus(clinic._id, clinic.status)}
-                        className={`px-3 py-1 rounded-md transition-colors ${
-                          clinic.status === 'Active' 
-                            ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                            : 'bg-green-50 text-green-600 hover:bg-green-100'
-                        }`}
-                      >
-                        {clinic.status === 'Active' ? 'Suspend' : 'Activate'}
-                      </button>
+                      <div className="flex justify-end space-x-2">
+                        <button 
+                          onClick={() => handleEditClick(clinic)}
+                          className="px-3 py-1 rounded-md transition-colors bg-blue-50 text-blue-600 hover:bg-blue-100"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleToggleStatus(clinic._id, clinic.status)}
+                          className={`px-3 py-1 rounded-md transition-colors ${
+                            clinic.status === 'Active' 
+                              ? 'bg-red-50 text-red-600 hover:bg-red-100' 
+                              : 'bg-green-50 text-green-600 hover:bg-green-100'
+                          }`}
+                        >
+                          {clinic.status === 'Active' ? 'Suspend' : 'Activate'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -205,6 +249,50 @@ export default function Clinics() {
                     Register Clinic
                   </button>
                   <button type="button" onClick={() => setShowModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Clinic Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">
+          <div className="relative w-full max-w-2xl bg-white rounded-xl shadow-xl overflow-hidden">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Clinic</h3>
+              <button onClick={() => setShowEditModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div className="p-6">
+              <form onSubmit={handleEditSubmit}>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="col-span-2"><h4 className="font-semibold text-gray-700 border-b pb-2">Clinic Information</h4></div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Clinic Name</label>
+                      <input type="text" required value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Address</label>
+                      <input type="text" required value={editFormData.address} onChange={(e) => setEditFormData({...editFormData, address: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Clinic Phone</label>
+                      <input type="text" required value={editFormData.phone} onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Clinic Email</label>
+                      <input type="email" required value={editFormData.email} onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                    </div>
+                  </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 border-t rounded-b-xl">
+                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Save Changes
+                  </button>
+                  <button type="button" onClick={() => setShowEditModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Cancel
                   </button>
                 </div>

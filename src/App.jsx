@@ -15,6 +15,7 @@ import Doctors from './pages/ClinicAdmin/Doctors';
 import Staff from './pages/ClinicAdmin/Staff';
 import Appointments from './pages/ClinicAdmin/Appointments';
 import Billing from './pages/ClinicAdmin/Billing';
+import ClinicAdminSettings from './pages/ClinicAdmin/Settings';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useContext(AuthContext);
@@ -62,7 +63,7 @@ function App() {
           <Route path="staff" element={<Staff />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="billing" element={<Billing />} />
-          <Route path="settings" element={<div className="p-4 text-gray-500">Clinic Settings Coming Soon</div>} />
+          <Route path="settings" element={<ClinicAdminSettings />} />
         </Route>
       </Routes>
     </Router>
