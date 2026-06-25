@@ -58,7 +58,7 @@ export default function Doctors() {
     name: '', email: '', phone: '', password: '',
     qualification: '', specialization: '', registration_number: '', consultation_fee: '', 
     available_timings: [
-      { days: [], start_time: '10:00', end_time: '18:00' }
+      { days: [], start: '10:00', end: '18:00' }
     ]
   });
 
@@ -87,45 +87,16 @@ export default function Doctors() {
       
       let timings = doc.available_timings;
       if (typeof timings === 'string') {
-          timings = [{ days: [], start_time: '10:00', end_time: '18:00' }];
+          timings = [{ days: [], start: '10:00', end: '18:00' }];
       } else if (!Array.isArray(timings) || timings.length === 0) {
-          timings = [{ days: [], start_time: '10:00', end_time: '18:00' }];
+          timings = [{ days: [], start: '10:00', end: '18:00' }];
       } else {
-          // Group flat database timings [{ day: 'mo', start_time: '...', end_time: '...' }] into UI format [{ days: ['Mo'], start_time, end_time }]
-          const groups = {};
-          timings.forEach(t => {
-            const start = t.start_time || t.startTime || '10:00';
-            const end = t.end_time || t.endTime || '18:00';
-            const key = `${start}-${end}`;
-            
-            const rawDay = t.day || '';
-            const clean = rawDay.trim().toLowerCase();
-            let formattedDay = '';
-            if (clean.startsWith('mo')) formattedDay = 'Mo';
-            else if (clean.startsWith('tu')) formattedDay = 'Tu';
-            else if (clean.startsWith('we')) formattedDay = 'We';
-            else if (clean.startsWith('th')) formattedDay = 'Th';
-            else if (clean.startsWith('fr')) formattedDay = 'Fr';
-            else if (clean.startsWith('sa')) formattedDay = 'Sa';
-            else if (clean.startsWith('su')) formattedDay = 'Su';
-            
-            if (!groups[key]) {
-              groups[key] = {
-                days: [],
-                start_time: start,
-                end_time: end
-              };
-            }
-            if (formattedDay && DAYS_OF_WEEK.includes(formattedDay)) {
-              if (!groups[key].days.includes(formattedDay)) {
-                groups[key].days.push(formattedDay);
-              }
-            }
-          });
-          timings = Object.values(groups);
-          if (timings.length === 0) {
-            timings = [{ days: [], start_time: '10:00', end_time: '18:00' }];
-          }
+          // Standardize database schema fields (days, start, end)
+          timings = timings.map(slot => ({
+            days: slot.days || [],
+            start: slot.start || slot.start_time || '10:00',
+            end: slot.end || slot.end_time || '18:00'
+          }));
       }
 
       setFormData({
@@ -150,7 +121,7 @@ export default function Doctors() {
   const handleAddSlot = () => {
     setFormData(prev => ({
       ...prev,
-      available_timings: [...prev.available_timings, { days: [], start_time: '10:00', end_time: '18:00' }]
+      available_timings: [...prev.available_timings, { days: [], start: '10:00', end: '18:00' }]
     }));
   };
 
@@ -193,33 +164,19 @@ export default function Doctors() {
     const validTimings = formData.available_timings.filter(slot => slot.days.length > 0);
 
     for (let slot of validTimings) {
-      if (!slot.start_time || !slot.end_time) {
+      if (!slot.start || !slot.end) {
         alert("Please select start and end times for all active slots.");
         return;
       }
     }
 
-    // Flatten UI format (grouped by time range) into DB format (array of single days)
-    const flatTimings = [];
-    validTimings.forEach(slot => {
-      const days = slot.days || [];
-      days.forEach(day => {
-        flatTimings.push({
-          day: day.toLowerCase(),
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          slot_minutes: 15
-        });
-      });
-    });
-
     try {
       if (editingId) {
-        const updateData = { ...formData, available_timings: flatTimings };
+        const updateData = { ...formData, available_timings: validTimings };
         if (!updateData.password) delete updateData.password;
         await api.put(`/clinic-admin/doctors/${editingId}`, updateData);
       } else {
-        await api.post('/clinic-admin/doctors', { ...formData, available_timings: flatTimings });
+        await api.post('/clinic-admin/doctors', { ...formData, available_timings: validTimings });
       }
       setShowModal(false);
       fetchDoctors();
@@ -464,13 +421,13 @@ export default function Doctors() {
                             <p className="text-sm text-gray-500 mb-3">Select Time</p>
                             <div className="flex items-center space-x-3 w-full">
                               <TimeSelect 
-                                value={slot.start_time} 
-                                onChange={val => handleTimingChange(index, 'start_time', val)}
+                                value={slot.start} 
+                                onChange={val => handleTimingChange(index, 'start', val)}
                               />
                               <span className="text-gray-400 font-medium">to</span>
                               <TimeSelect 
-                                value={slot.end_time} 
-                                onChange={val => handleTimingChange(index, 'end_time', val)}
+                                value={slot.end} 
+                                onChange={val => handleTimingChange(index, 'end', val)}
                               />
                             </div>
                           </div>
