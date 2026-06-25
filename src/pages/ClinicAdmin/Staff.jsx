@@ -87,86 +87,86 @@ export default function Staff() {
   };
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Staff Management</h1>
-          <p className="text-gray-500">Manage receptionists, nurses, and accountants</p>
+          <h1 className="text-2xl font-bold text-text-primary">Staff Management</h1>
+          <p className="text-text-secondary mt-1">Manage receptionists, nurses, and accountants</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+          className="bg-primary text-white h-11 px-6 rounded-full font-medium flex items-center space-x-2 hover:bg-primary-600 transition-all shadow-primary cursor-pointer"
         >
-          <Plus size={20} className="mr-2" />
-          Add Staff Member
+          <Plus size={20} className="mr-1" />
+          <span>Add Staff Member</span>
         </button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-10">Loading...</div>
+        <div className="flex justify-center py-10 text-text-secondary">Loading...</div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Details</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {staff.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No staff found</td>
+        <div className="bg-white rounded-[20px] shadow-subtle border border-border-light overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border-light text-slate-500 text-xs font-semibold tracking-wide uppercase bg-slate-50/50">
+                  <th className="p-4 font-semibold">Staff Details</th>
+                  <th className="p-4 font-semibold">Contact</th>
+                  <th className="p-4 font-semibold">Role</th>
+                  <th className="p-4 font-semibold">Status</th>
+                  <th className="p-4 font-semibold text-right">Actions</th>
                 </tr>
-              ) : (
-                staff.map((member) => (
-                  <tr key={member._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
-                          <User size={20} />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{member.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 flex items-center">
-                        <Mail size={14} className="mr-2 text-gray-400" /> {member.email}
-                      </div>
-                      <div className="text-sm text-gray-500 flex items-center mt-1">
-                        <Phone size={14} className="mr-2 text-gray-400" /> {member.phone}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex items-center">
-                        <BadgeInfo size={14} className="mr-2 text-gray-400" /> {member.role}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        member.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {member.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                      <button onClick={() => handleOpenModal(member)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                        <Edit2 size={18} />
-                      </button>
-                      <button onClick={() => handleDelete(member._id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition">
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
+              </thead>
+              <tbody className="divide-y divide-border-light">
+                {staff.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-10 text-center text-text-secondary">No staff found</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  staff.map((member) => (
+                    <tr key={member._id} className="h-[72px] hover:bg-slate-50 transition-colors group">
+                      <td className="p-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                            <User size={20} />
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold text-text-primary">{member.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <div className="flex flex-col space-y-1 text-sm">
+                          <span className="flex items-center text-text-secondary"><Mail size={12} className="text-gray-400 mr-1.5" /> {member.email}</span>
+                          <span className="flex items-center text-text-secondary"><Phone size={12} className="text-gray-400 mr-1.5" /> {member.phone}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 whitespace-nowrap text-sm text-text-secondary">
+                        <div className="flex items-center">
+                          <BadgeInfo size={12} className="text-gray-400 mr-1.5" /> {member.role}
+                        </div>
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 inline-flex text-xxs font-bold rounded-full border ${
+                          member.status === 'Active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'
+                        }`}>
+                          {member.status}
+                        </span>
+                      </td>
+                      <td className="p-4 whitespace-nowrap text-right text-sm font-medium space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleOpenModal(member)} className="p-1.5 text-primary hover:bg-primary-light rounded transition-colors cursor-pointer">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(member._id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer">
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 

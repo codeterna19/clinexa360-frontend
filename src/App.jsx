@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useContext, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
 import Login from './pages/Login';
 import SidebarLayout from './layouts/SidebarLayout';
@@ -47,9 +47,35 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
+const TitleUpdater = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    let title = 'Clinexa360';
+
+    if (path === '/login') {
+      title = 'Login - Clinexa360';
+    } else if (path !== '/' && path.length > 1) {
+      const parts = path.split('/').filter(Boolean);
+      const role = parts[0];
+      const page = parts[1] || 'dashboard';
+      
+      const formatWord = (str) => str.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      
+      title = `${formatWord(page)} - ${formatWord(role)} | Clinexa360`;
+    }
+
+    document.title = title;
+  }, [location]);
+
+  return null;
+};
+
 function App() {
   return (
     <Router>
+      <TitleUpdater />
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />

@@ -271,14 +271,14 @@ export default function Billing() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing & Invoices</h1>
-          <p className="text-gray-500 mt-1">Generate invoices and collect payments</p>
+          <h1 className="text-2xl font-bold text-text-primary">Billing & Invoices</h1>
+          <p className="text-text-secondary mt-1">Generate invoices and collect payments</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="bg-primary-600 text-white px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
+          className="bg-primary text-white h-11 px-6 rounded-full font-medium flex items-center space-x-2 hover:bg-primary-600 transition-all shadow-primary cursor-pointer"
         >
-          <Plus size={20} />
+          <Plus size={20} className="mr-1" />
           <span>New Invoice</span>
         </button>
       </div>
@@ -287,36 +287,36 @@ export default function Billing() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div 
           onClick={() => handleOpenModal()}
-          className="bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl p-6 text-white shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+          className="bg-primary rounded-[20px] p-6 text-white shadow-subtle flex items-center justify-between cursor-pointer hover:-translate-y-1 transition-all"
         >
           <div>
             <h3 className="font-semibold text-lg">Quick Invoice</h3>
-            <p className="text-indigo-100 text-sm mt-1">Generate invoices directly</p>
+            <p className="text-primary-light/80 text-sm mt-1">Generate invoices directly</p>
           </div>
           <Receipt size={32} className="opacity-80" />
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center space-x-4">
-          <div className="bg-blue-50 text-blue-600 p-3 rounded-lg"><FileText size={24} /></div>
+        <div className="bg-white border border-border-light rounded-[20px] p-6 shadow-subtle flex items-center space-x-4">
+          <div className="bg-blue-50 text-blue-600 p-3 rounded-xl"><FileText size={24} /></div>
           <div>
-            <h4 className="font-medium text-gray-500">Total Revenue Today</h4>
-            <p className="text-2xl font-bold text-gray-900 mt-1">₹{revenueToday.toFixed(2)}</p>
+            <h4 className="font-medium text-text-secondary text-sm">Total Revenue Today</h4>
+            <p className="text-2xl font-bold text-text-primary mt-1">₹{revenueToday.toFixed(2)}</p>
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center space-x-4">
-          <div className="bg-yellow-50 text-yellow-600 p-3 rounded-lg"><Clock size={24} /></div>
+        <div className="bg-white border border-border-light rounded-[20px] p-6 shadow-subtle flex items-center space-x-4">
+          <div className="bg-orange-50 text-orange-600 p-3 rounded-xl"><Clock size={24} /></div>
           <div>
-            <h4 className="font-medium text-gray-500">Pending Receivables</h4>
-            <p className="text-2xl font-bold text-gray-900 mt-1">₹{pendingReceivables.toFixed(2)}</p>
+            <h4 className="font-medium text-text-secondary text-sm">Pending Receivables</h4>
+            <p className="text-2xl font-bold text-text-primary mt-1">₹{pendingReceivables.toFixed(2)}</p>
           </div>
         </div>
       </div>
 
       {/* Bills Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-          <h3 className="font-semibold text-lg text-gray-900">Recent Invoices</h3>
+      <div className="bg-white rounded-[20px] shadow-subtle border border-border-light overflow-hidden">
+        <div className="p-6 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
+          <h3 className="font-semibold text-lg text-text-primary">Recent Invoices</h3>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input 
@@ -324,7 +324,7 @@ export default function Billing() {
               placeholder="Search invoices..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              className="h-11 w-full md:w-[260px] pl-10 pr-4 rounded-full border border-border-light bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
             />
           </div>
         </div>
@@ -332,7 +332,7 @@ export default function Billing() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-sm font-semibold tracking-wider">
+              <tr className="border-y border-border-light text-slate-500 text-xs font-semibold tracking-wide uppercase bg-slate-50/50">
                 <th className="p-4">Invoice #</th>
                 <th className="p-4">Patient</th>
                 <th className="p-4">Date</th>
@@ -342,34 +342,34 @@ export default function Billing() {
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border-light">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-10 text-center text-gray-500">Loading bills...</td>
+                  <td colSpan="7" className="p-10 text-center text-text-secondary">Loading bills...</td>
                 </tr>
               ) : filteredBills.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="p-16 text-center text-gray-400">No invoices found</td>
+                  <td colSpan="7" className="p-16 text-center text-text-secondary">No invoices found</td>
                 </tr>
               ) : (
                 filteredBills.map((bill) => (
-                  <tr key={bill._id} className="hover:bg-gray-50 transition-colors group">
-                    <td className="p-4 font-semibold text-gray-900">{bill.invoice_number || `INV-${bill._id.slice(-6).toUpperCase()}`}</td>
-                    <td className="p-4 text-gray-700 font-medium">{bill.patient_id?.name || 'Unknown'}</td>
-                    <td className="p-4 text-gray-500">{new Date(bill.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                    <td className="p-4 font-bold text-gray-900">₹{bill.amount.toFixed(2)}</td>
+                  <tr key={bill._id} className="h-[72px] hover:bg-slate-50 transition-colors group">
+                    <td className="p-4 font-semibold text-text-primary text-sm">{bill.invoice_number || `INV-${bill._id.slice(-6).toUpperCase()}`}</td>
+                    <td className="p-4 text-text-primary font-medium text-sm">{bill.patient_id?.name || 'Unknown'}</td>
+                    <td className="p-4 text-text-secondary text-sm">{new Date(bill.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td className="p-4 font-bold text-text-primary text-sm">₹{bill.amount.toFixed(2)}</td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${getStatusColor(bill.status)} border`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xxs font-bold inline-flex items-center space-x-1 ${getStatusColor(bill.status)} border`}>
                         {bill.status === 'Paid' && <CheckCircle size={12} />}
                         {bill.status === 'Pending' && <Clock size={12} />}
                         <span>{bill.status}</span>
                       </span>
                     </td>
-                    <td className="p-4 text-gray-600 font-medium">{bill.payment_mode || '-'}</td>
-                    <td className="p-4 text-right space-x-2">
+                    <td className="p-4 text-text-secondary font-medium text-sm">{bill.payment_mode || '-'}</td>
+                    <td className="p-4 text-right space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => handleOpenModal(bill)}
-                        className="p-1.5 text-primary-600 hover:bg-primary-50 rounded transition-colors cursor-pointer inline-flex"
+                        className="p-1.5 text-primary hover:bg-primary-light rounded transition-colors cursor-pointer inline-flex"
                         title="Edit Invoice"
                       >
                         <Edit2 size={16} />
@@ -383,14 +383,14 @@ export default function Billing() {
                       </button>
                       <button 
                         onClick={() => handleDownload(bill)}
-                        className="p-1.5 text-gray-500 hover:bg-gray-100 rounded transition-colors cursor-pointer inline-flex"
+                        className="p-1.5 text-text-secondary hover:bg-slate-200 rounded transition-colors cursor-pointer inline-flex"
                         title="Print PDF"
                       >
                         <Download size={16} />
                       </button>
                       <button 
                         onClick={() => handleSendEmail(bill)}
-                        className="p-1.5 text-gray-500 hover:bg-gray-100 rounded transition-colors cursor-pointer inline-flex"
+                        className="p-1.5 text-text-secondary hover:bg-slate-200 rounded transition-colors cursor-pointer inline-flex"
                         title="Email Patient"
                       >
                         <Send size={16} />

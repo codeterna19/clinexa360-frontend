@@ -309,21 +309,21 @@ export default function Appointments() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
-          <p className="text-gray-500 mt-1">Manage all clinic consultations and bookings</p>
+          <h1 className="text-2xl font-bold text-text-primary">Appointments</h1>
+          <p className="text-text-secondary mt-1">Manage all clinic consultations and bookings</p>
         </div>
         <div className="flex space-x-3">
           <button 
             type="button"
             onClick={() => setIsQuickAddOpen(true)}
-            className="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm font-semibold cursor-pointer"
+            className="bg-white border border-border-light text-text-primary h-11 px-6 rounded-full font-medium flex items-center space-x-2 hover:bg-slate-50 transition-all shadow-subtle cursor-pointer"
           >
             <Plus size={20} />
             <span>Quick Add Patient</span>
           </button>
           <button 
             onClick={() => handleOpenModal()}
-            className="bg-primary-600 text-white px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
+            className="bg-primary text-white h-11 px-6 rounded-full font-medium flex items-center space-x-2 hover:bg-primary-600 transition-all shadow-primary cursor-pointer"
           >
             <Plus size={20} />
             <span>New Appointment</span>
@@ -334,11 +334,11 @@ export default function Appointments() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Interactive Calendar Side panel */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-[20px] shadow-subtle border border-border-light">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
-              <CalendarIcon className="text-primary-600" size={20} />
-              <h3 className="font-semibold text-lg">Calendar</h3>
+              <CalendarIcon className="text-primary" size={20} />
+              <h3 className="font-semibold text-lg text-text-primary">Calendar</h3>
             </div>
           </div>
           
@@ -367,12 +367,12 @@ export default function Appointments() {
                     <button
                       onClick={() => handleDateClick(day)}
                       className={`w-full h-full rounded-lg flex flex-col items-center justify-center transition-all relative cursor-pointer ${
-                        isSelected ? 'bg-primary-600 text-white shadow-md' : 'hover:bg-gray-50 text-gray-700'
+                        isSelected ? 'bg-primary text-white shadow-md' : 'hover:bg-slate-50 text-gray-700'
                       }`}
                     >
                       <span className="text-sm font-medium z-10">{day}</span>
                       {count > 0 && (
-                        <span className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-primary-500'}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-primary'}`}></span>
                       )}
                     </button>
                   )}
@@ -381,12 +381,12 @@ export default function Appointments() {
             })}
           </div>
           
-          <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-              <span className="w-2 h-2 rounded-full bg-primary-500"></span>
+          <div className="mt-6 pt-6 border-t border-border-light">
+            <div className="flex items-center space-x-2 text-sm text-text-secondary mb-2">
+              <span className="w-2 h-2 rounded-full bg-primary"></span>
               <span>Has Appointments</span>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-text-secondary">
               <span className="w-2 h-2 rounded-full bg-primary-600"></span>
               <span>Selected Date</span>
             </div>
@@ -394,9 +394,9 @@ export default function Appointments() {
         </div>
 
         {/* Appointments List */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden flex flex-col h-[600px]">
+        <div className="lg:col-span-2 bg-white rounded-[20px] shadow-subtle border border-border-light overflow-x-hidden flex flex-col h-[600px]">
           {/* Tabs Header */}
-          <div className="flex border-b border-gray-200 bg-gray-50/50">
+          <div className="flex border-b border-border-light bg-slate-50/50">
             <button
               onClick={() => {
                 setActiveTab('today');
@@ -404,12 +404,12 @@ export default function Appointments() {
               }}
               className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
                 activeTab === 'today'
-                  ? 'border-primary-600 text-primary-600 bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                  ? 'border-primary text-primary bg-white'
+                  : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-slate-100/50'
               }`}
             >
               <span>Today</span>
-              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'today' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countToday}</span>
+              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'today' ? 'bg-primary-light text-primary' : 'bg-gray-200 text-gray-600'}`}>{countToday}</span>
             </button>
 
             {!isSameDay(selectedDate, todayDate) && (
@@ -417,12 +417,12 @@ export default function Appointments() {
                 onClick={() => setActiveTab('selected')}
                 className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
                   activeTab === 'selected'
-                    ? 'border-primary-600 text-primary-600 bg-white'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                    ? 'border-primary text-primary bg-white'
+                    : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-slate-100/50'
                 }`}
               >
                 <span>Selected ({selectedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})</span>
-                <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'selected' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countSelected}</span>
+                <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'selected' ? 'bg-primary-light text-primary' : 'bg-gray-200 text-gray-600'}`}>{countSelected}</span>
               </button>
             )}
 
@@ -430,32 +430,32 @@ export default function Appointments() {
               onClick={() => setActiveTab('upcoming')}
               className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
                 activeTab === 'upcoming'
-                  ? 'border-primary-600 text-primary-600 bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                  ? 'border-primary text-primary bg-white'
+                  : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-slate-100/50'
               }`}
             >
               <span>Upcoming</span>
-              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'upcoming' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countUpcoming}</span>
+              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'upcoming' ? 'bg-primary-light text-primary' : 'bg-gray-200 text-gray-600'}`}>{countUpcoming}</span>
             </button>
 
             <button
               onClick={() => setActiveTab('previous')}
               className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
                 activeTab === 'previous'
-                  ? 'border-primary-600 text-primary-600 bg-white'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                  ? 'border-primary text-primary bg-white'
+                  : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-slate-100/50'
               }`}
             >
               <span>Previous</span>
-              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'previous' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countPrevious}</span>
+              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'previous' ? 'bg-primary-light text-primary' : 'bg-gray-200 text-gray-600'}`}>{countPrevious}</span>
             </button>
           </div>
           
-          <div className="divide-y divide-gray-100 overflow-y-auto flex-1">
+          <div className="divide-y divide-border-light overflow-y-auto flex-1">
             {loading ? (
-              <div className="p-10 text-center text-gray-500">Loading schedule...</div>
+              <div className="p-10 text-center text-text-secondary">Loading schedule...</div>
             ) : filteredAppointments.length === 0 ? (
-              <div className="p-16 text-center flex flex-col items-center justify-center text-gray-400">
+              <div className="p-16 text-center flex flex-col items-center justify-center text-text-secondary">
                 <CalendarIcon size={48} className="mb-4 opacity-20" />
                 <p className="font-medium">
                   {activeTab === 'today' && "No appointments scheduled for today."}
@@ -466,23 +466,23 @@ export default function Appointments() {
               </div>
             ) : (
               filteredAppointments.map((apt) => (
-                <div key={apt._id} className="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+                <div key={apt._id} className="p-6 hover:bg-slate-50 transition-colors flex items-center justify-between group">
                   <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700 flex items-center justify-center font-bold text-lg shadow-sm border border-primary-200">
+                    <div className="w-10 h-10 rounded-full bg-primary-light text-primary flex items-center justify-center font-bold text-sm">
                       {apt.patient_id?.name?.charAt(0) || '?'}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">{apt.patient_id?.name || 'Unknown Patient'}</h4>
-                      <div className="flex items-center space-x-4 mt-1.5 text-sm text-gray-500 flex-wrap gap-y-2">
-                        <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><User size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">Dr. {apt.doctor_id?.name || 'Unknown'}</span></span>
-                        <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><Clock size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">{apt.time}</span></span>
+                      <h4 className="font-semibold text-text-primary text-sm">{apt.patient_id?.name || 'Unknown Patient'}</h4>
+                      <div className="flex items-center space-x-4 mt-1.5 text-sm text-text-secondary flex-wrap gap-y-2">
+                        <span className="flex items-center space-x-1.5 bg-gray-50 px-2 py-0.5 rounded-md"><User size={14} className="text-gray-400"/> <span className="font-medium text-text-primary">Dr. {apt.doctor_id?.name || 'Unknown'}</span></span>
+                        <span className="flex items-center space-x-1.5 bg-gray-50 px-2 py-0.5 rounded-md"><Clock size={14} className="text-gray-400"/> <span className="font-medium text-text-primary">{apt.time}</span></span>
                         {activeTab !== 'today' && activeTab !== 'selected' && (
-                          <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><CalendarIcon size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">{parseDbDate(apt.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span></span>
+                          <span className="flex items-center space-x-1.5 bg-gray-50 px-2 py-0.5 rounded-md"><CalendarIcon size={14} className="text-gray-400"/> <span className="font-medium text-text-primary">{parseDbDate(apt.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span></span>
                         )}
                         <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-semibold">{apt.type}</span>
                       </div>
                       {apt.description && (
-                        <p className="text-xs text-gray-500 italic mt-2 bg-gray-50 border border-gray-100 rounded px-2 py-1 inline-block">
+                        <p className="text-xs text-text-secondary italic mt-2 bg-slate-50 border border-border-light rounded px-2 py-1 inline-block">
                           Note: {apt.description}
                         </p>
                       )}
