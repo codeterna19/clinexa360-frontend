@@ -94,67 +94,69 @@ export default function Subscriptions() {
   };
 
   return (
-    <div className="p-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Subscriptions</h1>
-          <p className="text-gray-500">Manage billing and subscription plans for all clinics</p>
+          <h1 className="text-2xl font-bold text-text-primary">Subscriptions</h1>
+          <p className="text-text-secondary mt-1">Manage billing and subscription plans for all clinics</p>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-10">Loading...</div>
+        <div className="flex justify-center py-10 text-text-secondary">Loading...</div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clinic Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Plan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        <div className="bg-white rounded-[20px] shadow-subtle border border-border-light overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-y border-border-light text-slate-500 text-xs font-semibold tracking-wide uppercase bg-slate-50/50">
+                <th className="p-4">Clinic Name</th>
+                <th className="p-4">Current Plan</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Expiry Date</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-border-light">
               {clinics.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No clinics found</td>
+                  <td colSpan="5" className="p-16 text-center text-text-secondary">No clinics found</td>
                 </tr>
               ) : (
                 clinics.map((clinic) => (
-                  <tr key={clinic._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{clinic.name}</div>
-                      <div className="text-sm text-gray-500">{clinic.email}</div>
+                  <tr key={clinic._id} className="h-[72px] hover:bg-slate-50 transition-colors group">
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-text-primary">{clinic.name}</div>
+                      <div className="text-xs text-text-secondary mt-0.5">{clinic.email}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getPlanColor(clinic.subscriptionPlan?.name || 'Basic')}`}>
+                    <td className="p-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 inline-flex text-xxs font-bold rounded-full border ${getPlanColor(clinic.subscriptionPlan?.name || 'Basic')}`}>
                         {clinic.subscriptionPlan?.name || 'Unassigned'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        clinic.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    <td className="p-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 inline-flex text-xxs font-bold rounded-full border ${
+                        clinic.status === 'Active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
                       }`}>
                         {clinic.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="p-4 whitespace-nowrap text-sm text-text-secondary font-medium">
                       <div className="flex items-center">
-                        <Clock size={14} className="mr-2 text-gray-400" />
+                        <Clock size={14} className="mr-2 opacity-70" />
                         {clinic.subscriptionExpiry 
                           ? new Date(clinic.subscriptionExpiry).toLocaleDateString() 
                           : 'No expiry set'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button 
-                        onClick={() => handleEditClick(clinic)}
-                        className="text-primary-600 hover:text-primary-900 flex items-center justify-end w-full"
-                      >
-                        <Edit2 size={16} className="mr-1" /> Change Plan
-                      </button>
+                    <td className="p-4 whitespace-nowrap text-right text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end">
+                        <button 
+                          onClick={() => handleEditClick(clinic)}
+                          className="px-4 py-1.5 rounded-full transition-colors bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center text-xs font-semibold cursor-pointer"
+                        >
+                          <Edit2 size={14} className="mr-1.5" /> Change Plan
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -167,21 +169,21 @@ export default function Subscriptions() {
       {/* Edit Subscription Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">
-          <div className="relative w-full max-w-md bg-white rounded-xl shadow-xl overflow-hidden">
-            <div className="px-6 py-4 border-b flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Update Subscription</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">&times;</button>
+          <div className="relative w-full max-w-md bg-white rounded-[20px] shadow-xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border-light flex justify-between items-center bg-slate-50/50">
+              <h3 className="text-lg font-bold text-text-primary">Update Subscription</h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">&times;</button>
             </div>
             <div className="p-6">
               <form onSubmit={handleSubmit}>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Clinic</label>
-                      <input type="text" readOnly value={selectedClinic?.name} className="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-md shadow-sm py-2 px-3 sm:text-sm text-gray-500" />
+                      <label className="block text-sm font-semibold text-text-primary ml-1">Clinic</label>
+                      <input type="text" readOnly value={selectedClinic?.name} className="mt-1.5 h-11 block w-full bg-slate-50 border border-border-light rounded-full shadow-sm px-4 sm:text-sm text-text-secondary outline-none cursor-default" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Subscription Plan</label>
-                      <select name="subscriptionPlan" value={formData.subscriptionPlan} onChange={handleInputChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
+                      <label className="block text-sm font-semibold text-text-primary ml-1">Subscription Plan</label>
+                      <select name="subscriptionPlan" value={formData.subscriptionPlan} onChange={handleInputChange} required className="mt-1.5 h-11 block w-full px-4 border border-border-light rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm appearance-none bg-white">
                         <option value="">Select a Plan</option>
                         {globalPlans.map(plan => (
                           <option key={plan._id} value={plan._id}>{plan.name} {plan.name !== 'Custom' ? `(₹${plan.price})` : ''}</option>
@@ -190,70 +192,70 @@ export default function Subscriptions() {
                     </div>
 
                     {globalPlans.find(p => p._id === formData.subscriptionPlan)?.name === 'Custom' && (
-                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
-                        <h4 className="text-sm font-semibold text-gray-900 border-b pb-2">Select Features</h4>
+                      <div className="bg-slate-50 p-4 rounded-[20px] border border-border-light space-y-3 mt-2">
+                        <h4 className="text-sm font-bold text-text-primary border-b border-border-light pb-2">Select Features</h4>
                         {globalFeatures.length === 0 ? (
-                           <p className="text-sm text-gray-500">No active features found. Create them in Feature Management.</p>
+                           <p className="text-sm text-text-secondary">No active features found. Create them in Feature Management.</p>
                         ) : (
                           globalFeatures.map((feature) => (
                             <div key={feature._id} className="flex items-center justify-between">
-                              <label className="flex items-center space-x-2">
+                              <label className="flex items-center space-x-3 cursor-pointer">
                                 <input 
                                   type="checkbox" 
                                   checked={formData.customFeatures.includes(feature._id)}
                                   onChange={(e) => handleCustomFeatureChange(feature._id, e.target.checked)}
-                                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                  className="rounded border-gray-300 text-primary focus:ring-primary w-4 h-4 cursor-pointer"
                                 />
                                 <div>
-                                  <span className="text-sm text-gray-700 font-medium block">{feature.name}</span>
-                                  {feature.description && <span className="text-xs text-gray-500">{feature.description}</span>}
+                                  <span className="text-sm text-text-primary font-medium block">{feature.name}</span>
+                                  {feature.description && <span className="text-xs text-text-secondary">{feature.description}</span>}
                                 </div>
                               </label>
                               <div className="flex items-center">
-                                <span className="text-sm font-medium text-gray-900">₹{feature.price}</span>
+                                <span className="text-sm font-bold text-text-primary">₹{feature.price}</span>
                               </div>
                             </div>
                           ))
                         )}
-                        <div className="pt-3 mt-3 border-t flex justify-between font-semibold">
-                          <span className="text-sm text-gray-900">Total Price:</span>
-                          <span className="text-sm text-primary-600">₹{calculateCustomTotal()}</span>
+                        <div className="pt-3 mt-3 border-t border-border-light flex justify-between font-bold">
+                          <span className="text-sm text-text-primary">Total Price:</span>
+                          <span className="text-sm text-primary">₹{calculateCustomTotal()}</span>
                         </div>
                       </div>
                     )}
                     
                     {globalPlans.find(p => p._id === formData.subscriptionPlan) && 
                      globalPlans.find(p => p._id === formData.subscriptionPlan)?.name !== 'Custom' && (
-                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <h4 className="text-sm font-semibold text-gray-900 border-b pb-2 mb-3">Included Features</h4>
+                      <div className="bg-slate-50 p-4 rounded-[20px] border border-border-light mt-2">
+                        <h4 className="text-sm font-bold text-text-primary border-b border-border-light pb-2 mb-3">Included Features</h4>
                         <div className="space-y-2">
                           {globalPlans.find(p => p._id === formData.subscriptionPlan).features.map(featureId => {
                             const feature = globalFeatures.find(f => f._id === featureId);
                             if (!feature) return null;
                             return (
-                              <div key={feature._id} className="flex items-center text-sm text-gray-700">
+                              <div key={feature._id} className="flex items-center text-sm font-medium text-text-secondary">
                                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                                 {feature.name}
                               </div>
                             );
                           })}
                           {globalPlans.find(p => p._id === formData.subscriptionPlan).features.length === 0 && (
-                            <p className="text-sm text-gray-500">No specific features assigned to this plan.</p>
+                            <p className="text-sm text-text-secondary">No specific features assigned to this plan.</p>
                           )}
                         </div>
                       </div>
                     )}
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
-                      <input type="date" name="subscriptionExpiry" value={formData.subscriptionExpiry} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
+                      <label className="block text-sm font-semibold text-text-primary ml-1 mt-2">Expiry Date</label>
+                      <input type="date" name="subscriptionExpiry" value={formData.subscriptionExpiry} onChange={handleInputChange} className="mt-1.5 h-11 block w-full px-4 border border-border-light rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent sm:text-sm text-text-primary" />
                     </div>
                   </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 -mx-6 -mb-6 border-t">
-                  <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm">
+                <div className="bg-slate-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse mt-6 border-t border-border-light -mx-6 -mb-6">
+                  <button type="submit" className="w-full inline-flex justify-center rounded-full border border-transparent shadow-sm px-6 py-2.5 bg-primary font-bold text-white hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm cursor-pointer">
                     Save Changes
                   </button>
-                  <button type="button" onClick={() => setShowModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                  <button type="button" onClick={() => setShowModal(false)} className="mt-3 w-full inline-flex justify-center rounded-full border border-border-light shadow-sm px-6 py-2.5 bg-white font-bold text-text-secondary hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm cursor-pointer">
                     Cancel
                   </button>
                 </div>

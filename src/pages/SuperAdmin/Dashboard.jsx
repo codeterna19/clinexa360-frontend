@@ -3,13 +3,13 @@ import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 
 const StatCard = ({ title, value, icon: Icon, color, bg }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center transition-transform hover:-translate-y-1">
-    <div className={`${bg} ${color} p-4 rounded-lg mr-4`}>
+  <div className="bg-white rounded-[20px] shadow-subtle border border-border-light p-6 flex items-center transition-transform hover:-translate-y-1">
+    <div className={`${bg} ${color} p-4 rounded-xl mr-4`}>
       <Icon size={24} />
     </div>
     <div>
-      <p className="text-sm font-medium text-gray-500">{title}</p>
-      <h3 className="text-2xl font-bold text-gray-900 mt-1">{value}</h3>
+      <p className="text-sm font-medium text-text-secondary">{title}</p>
+      <h3 className="text-2xl font-bold text-text-primary mt-1">{value}</h3>
     </div>
   </div>
 );
@@ -41,8 +41,8 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Platform Overview</h1>
-          <p className="text-gray-500 mt-1">Real-time statistics across all clinics</p>
+          <h1 className="text-2xl font-bold text-text-primary">Platform Overview</h1>
+          <p className="text-text-secondary mt-1">Real-time statistics across all clinics</p>
         </div>
       </div>
 
@@ -60,14 +60,14 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
-          <h3 className="font-semibold text-lg mb-4">Revenue Growth</h3>
+        <div className="bg-white p-6 rounded-[20px] shadow-subtle border border-border-light h-96">
+          <h3 className="font-semibold text-lg mb-4 text-text-primary">Revenue Growth</h3>
           <div className="h-full flex items-center justify-center text-gray-400">
             Chart Placeholder
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
-          <h3 className="font-semibold text-lg mb-4">Recent Subscriptions</h3>
+        <div className="bg-white p-6 rounded-[20px] shadow-subtle border border-border-light h-96">
+          <h3 className="font-semibold text-lg mb-4 text-text-primary">Recent Subscriptions</h3>
           <div className="h-full flex items-center justify-center text-gray-400">
             Table Placeholder
           </div>

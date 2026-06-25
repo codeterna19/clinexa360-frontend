@@ -1,11 +1,12 @@
 import { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { HeartPulse } from 'lucide-react';
+import { HeartPulse, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
@@ -53,21 +54,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-light flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-page flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center text-primary-600">
+        <div className="flex justify-center text-primary">
           <HeartPulse size={48} />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-text-primary">
           Sign in to Clinexa360
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-text-secondary">
           Enter your credentials to access your portal
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-100">
+        <div className="bg-white py-8 px-4 shadow-subtle rounded-[20px] sm:px-10 border border-border-light">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-100">
@@ -76,50 +77,59 @@ export default function Login() {
             )}
             
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-text-primary ml-1">
                 Email address
               </label>
-              <div className="mt-1">
+              <div className="mt-1.5">
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="h-12 block w-full px-4 border border-border-light rounded-full shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all sm:text-sm"
+                  placeholder="Enter your email"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-semibold text-text-primary ml-1">
                 Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1.5 relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="h-12 block w-full pl-4 pr-12 border border-border-light rounded-full shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all sm:text-sm"
+                  placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between ml-1">
               <div className="flex items-center">
                 <input
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-text-secondary cursor-pointer">
                   Remember me
                 </label>
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                <a href="#" className="font-semibold text-primary hover:text-primary-600 transition-colors">
                   Forgot your password?
                 </a>
               </div>
@@ -129,14 +139,14 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                className="h-12 w-full flex justify-center items-center px-6 border border-transparent rounded-full shadow-primary text-sm font-bold text-white bg-primary hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 cursor-pointer"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-gray-200 text-xs text-center text-gray-500">
-              <p>Demo Accounts:</p>
+            <div className="mt-4 pt-4 border-t border-border-light text-xs text-center text-text-secondary">
+              <p className="font-semibold mb-1">Demo Accounts:</p>
               <p>SuperAdmin: admin@clinexa360.com / password123</p>
               <p>ClinicAdmin: clinicadmin@citycare.com / password123</p>
             </div>
