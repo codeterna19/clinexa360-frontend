@@ -3,6 +3,38 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Receipt, X } from 'lucide-react';
 import api from '../../api/axios';
 
+const TimeSelect = ({ value, onChange }) => {
+  const [hour, minute] = value ? value.split(':') : ['10', '00'];
+  let h = parseInt(hour || '10', 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h > 12) h -= 12;
+  if (h === 0) h = 12;
+  const strH = h.toString().padStart(2, '0');
+  
+  const handleTimeChange = (newH, newM, newAmpm) => {
+    let finalH = parseInt(newH, 10);
+    if (newAmpm === 'PM' && finalH !== 12) finalH += 12;
+    if (newAmpm === 'AM' && finalH === 12) finalH = 0;
+    onChange(`${finalH.toString().padStart(2, '0')}:${newM}`);
+  };
+
+  return (
+    <div className="flex items-center space-x-1 border border-gray-300 rounded-lg p-2.5 bg-white focus-within:ring-2 focus-within:ring-primary-500 w-full h-[46px]">
+       <select value={strH} onChange={e => handleTimeChange(e.target.value, minute, ampm)} className="p-1 outline-none bg-transparent font-medium text-gray-700 cursor-pointer">
+         {Array.from({length: 12}, (_, i) => (i+1).toString().padStart(2, '0')).map(hr => <option key={hr} value={hr}>{hr}</option>)}
+       </select>
+       <span className="text-gray-400 font-bold">:</span>
+       <select value={minute} onChange={e => handleTimeChange(strH, e.target.value, ampm)} className="p-1 outline-none bg-transparent font-medium text-gray-700 cursor-pointer">
+         {['00', '10', '15', '20', '30', '40', '45', '50'].map(m => <option key={m} value={m}>{m}</option>)}
+       </select>
+       <select value={ampm} onChange={e => handleTimeChange(strH, minute, e.target.value)} className="p-1 outline-none bg-gray-100 rounded text-sm font-semibold text-gray-700 cursor-pointer ml-1">
+         <option value="AM">AM</option>
+         <option value="PM">PM</option>
+       </select>
+    </div>
+  );
+};
+
 export default function Appointments() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -87,19 +119,21 @@ export default function Appointments() {
 
       let doctorsData = [];
       try {
-        const res = await api.get('/doctors');
+        const res = await api.get('/clinic-admin/doctors');
         doctorsData = res.data;
       } catch (err) {
+        console.warn('Failed to fetch doctors directly, attempting to extract from appointments...');
         try {
-          const res = await api.get('/users?role=Doctor');
-          doctorsData = res.data;
+          const resApts = await api.get('/appointments');
+          const docsMap = {};
+          resApts.data.forEach(apt => {
+            if (apt.doctor_id && apt.doctor_id._id) {
+              docsMap[apt.doctor_id._id] = apt.doctor_id;
+            }
+          });
+          doctorsData = Object.values(docsMap);
         } catch (err2) {
-          try {
-            const res = await api.get('/clinic-admin/doctors');
-            doctorsData = res.data;
-          } catch (err3) {
-            console.error('Failed to fetch doctors from all endpoints:', err3);
-          }
+          console.error('Failed to extract doctors from appointments:', err2);
         }
       }
       setDoctors(doctorsData);
@@ -647,12 +681,9 @@ export default function Appointments() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time *</label>
-                  <input 
-                    type="time" 
-                    required
+                  <TimeSelect 
                     value={formData.time} 
-                    onChange={e => setFormData({...formData, time: e.target.value})}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white" 
+                    onChange={val => setFormData({...formData, time: val})}
                   />
                 </div>
               </div>

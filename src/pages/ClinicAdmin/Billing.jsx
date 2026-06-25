@@ -63,20 +63,17 @@ export default function Billing() {
 
       let doctorsData = [];
       try {
-        const res = await api.get('/doctors');
+        const res = await api.get('/clinic-admin/doctors');
         doctorsData = res.data;
       } catch (err) {
-        try {
-          const res = await api.get('/users?role=Doctor');
-          doctorsData = res.data;
-        } catch (err2) {
-          try {
-            const res = await api.get('/clinic-admin/doctors');
-            doctorsData = res.data;
-          } catch (err3) {
-            console.error('Failed to fetch doctors from all endpoints:', err3);
+        console.warn('Failed to fetch doctors directly, extracting from appointments...');
+        const docsMap = {};
+        resAppointments.data.forEach(apt => {
+          if (apt.doctor_id && apt.doctor_id._id) {
+            docsMap[apt.doctor_id._id] = apt.doctor_id;
           }
-        }
+        });
+        doctorsData = Object.values(docsMap);
       }
       setDoctors(doctorsData);
     } catch (error) {
