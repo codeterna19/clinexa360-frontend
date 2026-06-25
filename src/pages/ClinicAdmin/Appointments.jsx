@@ -194,6 +194,25 @@ export default function Appointments() {
     setIsModalOpen(true);
   };
 
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const aptToUpdate = appointments.find(a => a._id === id);
+      const payload = {
+        patient_id: aptToUpdate.patient_id?._id || aptToUpdate.patient_id,
+        doctor_id: aptToUpdate.doctor_id?._id || aptToUpdate.doctor_id,
+        date: aptToUpdate.date,
+        time: aptToUpdate.time,
+        type: aptToUpdate.type,
+        status: newStatus,
+        description: aptToUpdate.description
+      };
+      await api.put(`/appointments/${id}`, payload);
+      fetchAppointments();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error updating status');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.patient_id || !formData.doctor_id || !formData.date || !formData.time) {
@@ -489,9 +508,19 @@ export default function Appointments() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end space-y-2">
-                    <span className={`px-3 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(apt.status)} border`}>
-                      {apt.status}
-                    </span>
+                    <select
+                      value={apt.status}
+                      onChange={(e) => handleStatusChange(apt._id, e.target.value)}
+                      className={`px-3 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(apt.status)} border cursor-pointer outline-none appearance-none`}
+                      style={{ textAlignLast: 'center' }}
+                      title="Update Status"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                      <option value="No Show">No Show</option>
+                    </select>
                     <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {apt.status === 'Completed' && (
                         <button 
@@ -528,8 +557,8 @@ export default function Appointments() {
       {/* Book/Edit Appointment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
               <h2 className="text-lg font-bold text-gray-900">
                 {editingId ? 'Edit Appointment Details' : 'Book New Appointment'}
               </h2>
@@ -542,10 +571,17 @@ export default function Appointments() {
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="block text-sm font-semibold text-gray-700">Patient *</label>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsQuickAddOpen(true)} 
+                    className="text-xs font-bold text-primary hover:underline flex items-center"
+                  >
+                    <Plus size={12} className="mr-0.5" /> Quick Add
+                  </button>
                 </div>
                 <select 
                   required
