@@ -9,6 +9,7 @@ export default function Appointments() {
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [activeTab, setActiveTab] = useState('today'); // 'today', 'selected', 'upcoming', 'previous'
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -63,9 +64,18 @@ export default function Appointments() {
 
   // Timezone-safe date equality check
   const isSameDay = (date1, date2) => {
+    if (!date1 || !date2) return false;
     return date1.getFullYear() === date2.getFullYear() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getDate() === date2.getDate();
+  };
+
+  // Timezone-safe DB date parser (using UTC parts to prevent offset shift)
+  const parseDbDate = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return null;
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   };
 
   // Calendar Logic
@@ -88,14 +98,22 @@ export default function Appointments() {
     const dateToCheck = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
     return appointments.filter(apt => {
       if (!apt.date) return false;
-      const aptDate = new Date(apt.date);
+      const aptDate = parseDbDate(apt.date);
       return isSameDay(aptDate, dateToCheck);
     }).length;
   };
 
   const handleDateClick = (day) => {
     if (day) {
-      setSelectedDate(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day));
+      const newD = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      setSelectedDate(newD);
+      const todayDate = new Date();
+      todayDate.setHours(0,0,0,0);
+      if (isSameDay(newD, todayDate)) {
+        setActiveTab('today');
+      } else {
+        setActiveTab('selected');
+      }
     }
   };
 
@@ -103,13 +121,13 @@ export default function Appointments() {
     if (apt) {
       setEditingId(apt._id);
 
-      // Format date to YYYY-MM-DD
+      // Format date to YYYY-MM-DD timezone-safely
       let formattedDate = '';
       if (apt.date) {
         const d = new Date(apt.date);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
+        const year = d.getUTCFullYear();
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
         formattedDate = `${year}-${month}-${day}`;
       }
 
@@ -174,11 +192,36 @@ export default function Appointments() {
     }
   };
 
+  // Setup tab filter timestamps
+  const todayDate = new Date();
+  todayDate.setHours(0,0,0,0);
+
+  const tomorrowDate = new Date(todayDate);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+
+  // Filter lists based on tab selection
   const filteredAppointments = appointments.filter(apt => {
     if (!apt.date) return false;
-    const aptDate = new Date(apt.date);
-    return isSameDay(aptDate, selectedDate);
+    const aptDate = parseDbDate(apt.date);
+    if (!aptDate) return false;
+
+    if (activeTab === 'today') {
+      return isSameDay(aptDate, todayDate);
+    } else if (activeTab === 'selected') {
+      return isSameDay(aptDate, selectedDate);
+    } else if (activeTab === 'upcoming') {
+      return aptDate >= tomorrowDate;
+    } else if (activeTab === 'previous') {
+      return aptDate < todayDate;
+    }
+    return false;
   });
+
+  // Calculate dynamic tab counts
+  const countToday = appointments.filter(apt => apt.date && isSameDay(parseDbDate(apt.date), todayDate)).length;
+  const countSelected = appointments.filter(apt => apt.date && isSameDay(parseDbDate(apt.date), selectedDate)).length;
+  const countUpcoming = appointments.filter(apt => apt.date && parseDbDate(apt.date) >= tomorrowDate).length;
+  const countPrevious = appointments.filter(apt => apt.date && parseDbDate(apt.date) < todayDate).length;
 
   return (
     <div className="space-y-6">
@@ -189,7 +232,7 @@ export default function Appointments() {
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="bg-primary-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
+          className="bg-primary-600 text-white px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
         >
           <Plus size={20} />
           <span>New Appointment</span>
@@ -260,13 +303,60 @@ export default function Appointments() {
 
         {/* Appointments List */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden flex flex-col h-[600px]">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h3 className="font-semibold text-lg text-gray-800">
-              Schedule for {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
-            </h3>
-            <span className="bg-primary-50 text-primary-700 border border-primary-100 text-sm font-semibold px-3 py-1 rounded-full">
-              {filteredAppointments.length} Appointments
-            </span>
+          {/* Tabs Header */}
+          <div className="flex border-b border-gray-200 bg-gray-50/50">
+            <button
+              onClick={() => {
+                setActiveTab('today');
+                setSelectedDate(todayDate);
+              }}
+              className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
+                activeTab === 'today'
+                  ? 'border-primary-600 text-primary-600 bg-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+              }`}
+            >
+              <span>Today</span>
+              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'today' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countToday}</span>
+            </button>
+
+            {!isSameDay(selectedDate, todayDate) && (
+              <button
+                onClick={() => setActiveTab('selected')}
+                className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
+                  activeTab === 'selected'
+                    ? 'border-primary-600 text-primary-600 bg-white'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                }`}
+              >
+                <span>Selected ({selectedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})</span>
+                <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'selected' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countSelected}</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setActiveTab('upcoming')}
+              className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
+                activeTab === 'upcoming'
+                  ? 'border-primary-600 text-primary-600 bg-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+              }`}
+            >
+              <span>Upcoming</span>
+              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'upcoming' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countUpcoming}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('previous')}
+              className={`flex-1 py-3.5 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
+                activeTab === 'previous'
+                  ? 'border-primary-600 text-primary-600 bg-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+              }`}
+            >
+              <span>Previous</span>
+              <span className={`px-2 py-0.5 text-xxs font-bold rounded-full ${activeTab === 'previous' ? 'bg-primary-100 text-primary-800' : 'bg-gray-200 text-gray-600'}`}>{countPrevious}</span>
+            </button>
           </div>
           
           <div className="divide-y divide-gray-100 overflow-y-auto flex-1">
@@ -275,7 +365,12 @@ export default function Appointments() {
             ) : filteredAppointments.length === 0 ? (
               <div className="p-16 text-center flex flex-col items-center justify-center text-gray-400">
                 <CalendarIcon size={48} className="mb-4 opacity-20" />
-                <p>No appointments scheduled for this date.</p>
+                <p className="font-medium">
+                  {activeTab === 'today' && "No appointments scheduled for today."}
+                  {activeTab === 'selected' && "No appointments scheduled for this date."}
+                  {activeTab === 'upcoming' && "No upcoming appointments scheduled."}
+                  {activeTab === 'previous' && "No past appointments found."}
+                </p>
               </div>
             ) : (
               filteredAppointments.map((apt) => (
@@ -286,9 +381,12 @@ export default function Appointments() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">{apt.patient_id?.name || 'Unknown Patient'}</h4>
-                      <div className="flex items-center space-x-4 mt-1.5 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 mt-1.5 text-sm text-gray-500 flex-wrap gap-y-2">
                         <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><User size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">Dr. {apt.doctor_id?.name || 'Unknown'}</span></span>
                         <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><Clock size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">{apt.time}</span></span>
+                        {activeTab !== 'today' && activeTab !== 'selected' && (
+                          <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><CalendarIcon size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">{parseDbDate(apt.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span></span>
+                        )}
                         <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-semibold">{apt.type}</span>
                       </div>
                     </div>
