@@ -1,15 +1,29 @@
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({
+    patient_id: '',
+    doctor_id: '',
+    date: '',
+    time: '10:00',
+    type: 'Consultation',
+    status: 'Pending'
+  });
+
   useEffect(() => {
     fetchAppointments();
+    fetchDoctorsAndPatients();
   }, []);
 
   const fetchAppointments = async () => {
@@ -23,14 +37,35 @@ export default function Appointments() {
     }
   };
 
+  const fetchDoctorsAndPatients = async () => {
+    try {
+      const [resDoctors, resPatients] = await Promise.all([
+        api.get('/clinic-admin/doctors'),
+        api.get('/patients')
+      ]);
+      setDoctors(resDoctors.data);
+      setPatients(resPatients.data);
+    } catch (error) {
+      console.error('Error fetching doctors/patients:', error);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch(status) {
-      case 'Confirmed': return 'bg-green-100 text-green-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Completed': return 'bg-gray-100 text-gray-800';
-      case 'Cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'Confirmed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'Pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'Completed': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'Cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      case 'No Show': return 'bg-orange-100 text-orange-800 border-orange-200';
+      default: return 'bg-blue-100 text-blue-800 border-blue-200';
     }
+  };
+
+  // Timezone-safe date equality check
+  const isSameDay = (date1, date2) => {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
   };
 
   // Calendar Logic
@@ -50,8 +85,12 @@ export default function Appointments() {
   // Count appointments for a specific day
   const getAppointmentCountForDate = (day) => {
     if (!day) return 0;
-    const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
-    return appointments.filter(apt => new Date(apt.date).toDateString() === dateStr).length;
+    const dateToCheck = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    return appointments.filter(apt => {
+      if (!apt.date) return false;
+      const aptDate = new Date(apt.date);
+      return isSameDay(aptDate, dateToCheck);
+    }).length;
   };
 
   const handleDateClick = (day) => {
@@ -60,7 +99,86 @@ export default function Appointments() {
     }
   };
 
-  const filteredAppointments = appointments.filter(apt => new Date(apt.date).toDateString() === selectedDate.toDateString());
+  const handleOpenModal = (apt = null) => {
+    if (apt) {
+      setEditingId(apt._id);
+
+      // Format date to YYYY-MM-DD
+      let formattedDate = '';
+      if (apt.date) {
+        const d = new Date(apt.date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        formattedDate = `${year}-${month}-${day}`;
+      }
+
+      setFormData({
+        patient_id: apt.patient_id?._id || apt.patient_id || '',
+        doctor_id: apt.doctor_id?._id || apt.doctor_id || '',
+        date: formattedDate,
+        time: apt.time || '10:00',
+        type: apt.type || 'Consultation',
+        status: apt.status || 'Pending'
+      });
+    } else {
+      setEditingId(null);
+
+      // Default date to currently selected calendar date
+      const d = selectedDate;
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+
+      setFormData({
+        patient_id: '',
+        doctor_id: '',
+        date: formattedDate,
+        time: '10:00',
+        type: 'Consultation',
+        status: 'Pending'
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.patient_id || !formData.doctor_id || !formData.date || !formData.time) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      if (editingId) {
+        await api.put(`/appointments/${editingId}`, formData);
+      } else {
+        await api.post('/appointments', formData);
+      }
+      setIsModalOpen(false);
+      fetchAppointments();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error saving appointment');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this appointment?")) {
+      try {
+        await api.delete(`/appointments/${id}`);
+        fetchAppointments();
+      } catch (error) {
+        alert(error.response?.data?.message || 'Error deleting appointment');
+      }
+    }
+  };
+
+  const filteredAppointments = appointments.filter(apt => {
+    if (!apt.date) return false;
+    const aptDate = new Date(apt.date);
+    return isSameDay(aptDate, selectedDate);
+  });
 
   return (
     <div className="space-y-6">
@@ -69,7 +187,10 @@ export default function Appointments() {
           <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
           <p className="text-gray-500 mt-1">Manage all clinic consultations and bookings</p>
         </div>
-        <button className="bg-secondary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-secondary/90 transition-colors">
+        <button 
+          onClick={() => handleOpenModal()}
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
+        >
           <Plus size={20} />
           <span>New Appointment</span>
         </button>
@@ -78,10 +199,10 @@ export default function Appointments() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Interactive Calendar Side panel */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
-              <CalendarIcon className="text-secondary" size={20} />
+              <CalendarIcon className="text-primary-600" size={20} />
               <h3 className="font-semibold text-lg">Calendar</h3>
             </div>
           </div>
@@ -110,8 +231,8 @@ export default function Appointments() {
                   {day && (
                     <button
                       onClick={() => handleDateClick(day)}
-                      className={`w-full h-full rounded-lg flex flex-col items-center justify-center transition-all relative ${
-                        isSelected ? 'bg-secondary text-white shadow-md' : 'hover:bg-gray-50 text-gray-700'
+                      className={`w-full h-full rounded-lg flex flex-col items-center justify-center transition-all relative cursor-pointer ${
+                        isSelected ? 'bg-primary-600 text-white shadow-md' : 'hover:bg-gray-50 text-gray-700'
                       }`}
                     >
                       <span className="text-sm font-medium z-10">{day}</span>
@@ -131,19 +252,19 @@ export default function Appointments() {
               <span>Has Appointments</span>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <span className="w-2 h-2 rounded-full bg-secondary"></span>
+              <span className="w-2 h-2 rounded-full bg-primary-600"></span>
               <span>Selected Date</span>
             </div>
           </div>
         </div>
 
         {/* Appointments List */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-hidden flex flex-col h-[600px]">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-hidden flex flex-col h-[600px]">
           <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <h3 className="font-semibold text-lg text-gray-800">
               Schedule for {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
             </h3>
-            <span className="bg-secondary/10 text-secondary text-sm font-semibold px-3 py-1 rounded-full">
+            <span className="bg-primary-50 text-primary-700 border border-primary-100 text-sm font-semibold px-3 py-1 rounded-full">
               {filteredAppointments.length} Appointments
             </span>
           </div>
@@ -168,16 +289,30 @@ export default function Appointments() {
                       <div className="flex items-center space-x-4 mt-1.5 text-sm text-gray-500">
                         <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><User size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">Dr. {apt.doctor_id?.name || 'Unknown'}</span></span>
                         <span className="flex items-center space-x-1.5 bg-gray-100 px-2 py-0.5 rounded-md"><Clock size={14} className="text-gray-400"/> <span className="font-medium text-gray-700">{apt.time}</span></span>
+                        <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-semibold">{apt.type}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end space-y-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(apt.status)} border ${getStatusColor(apt.status).replace('bg-', 'border-').replace('text-', 'border-')}/20`}>
+                  <div className="flex flex-col items-end space-y-2">
+                    <span className={`px-3 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(apt.status)} border`}>
                       {apt.status}
                     </span>
-                    <button className="text-sm text-secondary hover:text-secondary/80 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                      View Details &rarr;
-                    </button>
+                    <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => handleOpenModal(apt)} 
+                        className="p-1.5 text-primary-600 hover:bg-primary-50 rounded transition-colors cursor-pointer"
+                        title="Edit Appointment"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(apt._id)} 
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                        title="Delete Appointment"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -185,6 +320,122 @@ export default function Appointments() {
           </div>
         </div>
       </div>
+
+      {/* Add/Edit Shift Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+              <h2 className="text-lg font-bold text-gray-900">
+                {editingId ? 'Edit Appointment Details' : 'Book New Appointment'}
+              </h2>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Patient</label>
+                <select 
+                  required
+                  value={formData.patient_id} 
+                  onChange={e => setFormData({...formData, patient_id: e.target.value})}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                >
+                  <option value="">Select Patient...</option>
+                  {patients.map(p => (
+                    <option key={p._id} value={p._id}>{p.name} ({p.phone || p.email})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor</label>
+                <select 
+                  required
+                  value={formData.doctor_id} 
+                  onChange={e => setFormData({...formData, doctor_id: e.target.value})}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                >
+                  <option value="">Select Doctor...</option>
+                  {doctors.map(d => (
+                    <option key={d._id} value={d._id}>Dr. {d.name} ({d.specialization})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date</label>
+                  <input 
+                    type="date" 
+                    required
+                    value={formData.date} 
+                    onChange={e => setFormData({...formData, date: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time</label>
+                  <input 
+                    type="time" 
+                    required
+                    value={formData.time} 
+                    onChange={e => setFormData({...formData, time: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type</label>
+                  <select 
+                    value={formData.type} 
+                    onChange={e => setFormData({...formData, type: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                  >
+                    <option value="Consultation">Consultation</option>
+                    <option value="Follow-up">Follow-up</option>
+                    <option value="Telemedicine">Telemedicine</option>
+                  </select>
+                </div>
+
+                {editingId && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
+                    <select 
+                      value={formData.status} 
+                      onChange={e => setFormData({...formData, status: e.target.value})}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                      <option value="No Show">No Show</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-gray-50 -mx-6 -mb-6 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3 mt-6">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4.5 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm cursor-pointer shadow-sm bg-white"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-4.5 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-colors text-sm cursor-pointer shadow-sm"
+                >
+                  {editingId ? 'Save Changes' : 'Book Appointment'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
