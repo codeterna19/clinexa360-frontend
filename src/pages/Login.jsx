@@ -19,10 +19,31 @@ export default function Login() {
     
     try {
       const user = await login(email, password);
-      if (user.role === 'SuperAdmin') {
-        navigate('/superadmin');
-      } else {
-        navigate('/clinic-admin');
+      switch (user.role) {
+        case 'SuperAdmin':
+          navigate('/superadmin');
+          break;
+        case 'ClinicAdmin':
+          navigate('/clinic-admin');
+          break;
+        case 'Doctor':
+          navigate('/doctor');
+          break;
+        case 'Receptionist':
+          navigate('/receptionist');
+          break;
+        case 'Nurse':
+          navigate('/nurse');
+          break;
+        case 'LabAssistant':
+        case 'LabTechnician':
+          navigate('/lab-assistant');
+          break;
+        case 'Accountant':
+          navigate('/accountant');
+          break;
+        default:
+          navigate('/');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials');

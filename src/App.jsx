@@ -21,8 +21,6 @@ import Billing from './pages/ClinicAdmin/Billing';
 import ClinicSettings from './pages/ClinicAdmin/ClinicSettings';
 
 import ReceptionistLayout from './layouts/ReceptionistLayout';
-import ReceptionistDashboard from './pages/Receptionist/ReceptionistDashboard';
-import PatientRegistration from './pages/Receptionist/PatientRegistration';
 
 import DoctorLayout from './layouts/DoctorLayout';
 import DoctorDashboard from './pages/Doctor/DoctorDashboard';
@@ -137,10 +135,10 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<ReceptionistDashboard />} />
-          <Route path="appointments" element={<div className="p-4 text-gray-500">Appointments Coming Soon</div>} />
-          <Route path="registration" element={<PatientRegistration />} />
-          <Route path="billing" element={<div className="p-4 text-gray-500">Billing Coming Soon</div>} />
+          <Route index element={<ClinicAdminDashboard />} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route path="registration" element={<Patients />} />
+          <Route path="billing" element={<Billing />} />
         </Route>
 
         <Route 
