@@ -440,7 +440,7 @@ export default function Patients() {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                          {editingId ? 'New Password (Optional)' : 'Password *'}
+                          {editingId ? 'New Password' : 'Password *'}
                         </label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />

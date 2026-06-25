@@ -418,7 +418,7 @@ export default function Billing() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Linked Appointment (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Linked Appointment</label>
                 <select 
                   value={formData.appointment_id} 
                   onChange={e => handleAppointmentChange(e.target.value)}
@@ -437,7 +437,7 @@ export default function Billing() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor</label>
                 <select 
                   value={formData.doctor_id} 
                   onChange={e => setFormData({...formData, doctor_id: e.target.value})}
