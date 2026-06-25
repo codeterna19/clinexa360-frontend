@@ -332,7 +332,11 @@ export default function Patients() {
                 </div>
               </div>
               <button 
-                onClick={() => setIsModalOpen(false)} 
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsModalOpen(false);
+                }} 
                 className="text-gray-400 hover:text-gray-600 cursor-pointer p-1.5 hover:bg-gray-100 rounded-lg transition-all"
               >
                 <X size={20} />
@@ -343,7 +347,10 @@ export default function Patients() {
             <div className="flex border-b border-gray-100 bg-gray-50/50">
               <button
                 type="button"
-                onClick={() => setModalTab('personal')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setModalTab('personal');
+                }}
                 className={`flex-1 py-3 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-2 ${
                   modalTab === 'personal'
                     ? 'border-primary-600 text-primary-600 bg-white'
@@ -355,7 +362,14 @@ export default function Patients() {
               </button>
               <button
                 type="button"
-                onClick={() => setModalTab('medical')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!formData.name || !formData.email || !formData.phone || !formData.gender || !formData.dob) {
+                    alert("Please fill all required fields in the Personal Info tab before switching.");
+                    return;
+                  }
+                  setModalTab('medical');
+                }}
                 className={`flex-1 py-3 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-2 ${
                   modalTab === 'medical'
                     ? 'border-primary-600 text-primary-600 bg-white'
@@ -583,14 +597,18 @@ export default function Patients() {
                   <>
                     <button 
                       type="button"
-                      onClick={() => setIsModalOpen(false)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsModalOpen(false);
+                      }}
                       className="px-4 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm cursor-pointer shadow-sm bg-white"
                     >
                       Cancel
                     </button>
                     <button 
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
                         if (!formData.name || !formData.email || !formData.phone || !formData.gender || !formData.dob) {
                           alert("Please fill all required fields in the Personal Info tab.");
                           return;
@@ -607,7 +625,10 @@ export default function Patients() {
                   <>
                     <button 
                       type="button"
-                      onClick={() => setModalTab('personal')}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setModalTab('personal');
+                      }}
                       className="px-4 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm cursor-pointer shadow-sm bg-white flex items-center space-x-1.5"
                     >
                       <ChevronLeft size={16} />
