@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
-import { Plus, User, Phone, Mail, Briefcase, Edit2, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import { Plus, User, Phone, Mail, Briefcase, Edit2, Trash2, Eye, EyeOff, X, ChevronLeft, ChevronRight, Clock, Lock } from 'lucide-react';
 
 const SPECIALIZATIONS = [
   'General Physician', 'Cardiologist', 'Dermatologist', 'Pediatrician',
@@ -52,6 +52,7 @@ export default function Doctors() {
   const [showPassword, setShowPassword] = useState(false);
   
   const [editingId, setEditingId] = useState(null);
+  const [modalTab, setModalTab] = useState('basic'); // 'basic', 'professional', 'timings'
 
   // Form State
   const [formData, setFormData] = useState({
@@ -82,6 +83,7 @@ export default function Doctors() {
   };
 
   const handleOpenModal = (doc = null) => {
+    setModalTab('basic');
     if (doc) {
       setEditingId(doc._id);
       
@@ -279,135 +281,280 @@ export default function Doctors() {
 
       {/* Add/Edit Doctor Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">
-          <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-xl overflow-hidden my-8">
-            <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-900">{editingId ? 'Edit Doctor Details' : 'Add New Doctor'}</h3>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <X size={24} />
+        <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-5 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shadow-sm">
+                  <User size={22} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {editingId ? 'Edit Doctor Details' : 'Add New Doctor'}
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {editingId ? 'Modify doctor profile, qualification, and timings' : 'Create a new doctor file for shift assignments'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer p-1.5 hover:bg-gray-100 rounded-lg transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Navigation Tabs */}
+            <div className="flex border-b border-gray-100 bg-gray-50/50 shrink-0">
+              <button
+                type="button"
+                onClick={() => setModalTab('basic')}
+                className={`flex-1 py-3 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-2 ${
+                  modalTab === 'basic'
+                    ? 'border-primary-600 text-primary-600 bg-white font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                }`}
+              >
+                <User size={16} />
+                <span>1. Basic Info</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formData.name || !formData.email || !formData.phone || (!editingId && !formData.password)) {
+                    alert("Please fill all required fields in the Basic Info tab first.");
+                    return;
+                  }
+                  setModalTab('professional');
+                }}
+                className={`flex-1 py-3 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-2 ${
+                  modalTab === 'professional'
+                    ? 'border-primary-600 text-primary-600 bg-white font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                }`}
+              >
+                <Briefcase size={16} />
+                <span>2. Professional Info</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formData.name || !formData.email || !formData.phone || (!editingId && !formData.password)) {
+                    alert("Please fill all required fields in the Basic Info tab first.");
+                    return;
+                  }
+                  if (!formData.specialization || !formData.qualification || !formData.registration_number || !formData.consultation_fee) {
+                    alert("Please fill all required fields in the Professional Info tab first.");
+                    return;
+                  }
+                  setModalTab('timings');
+                }}
+                className={`flex-1 py-3 text-center text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center justify-center space-x-2 ${
+                  modalTab === 'timings'
+                    ? 'border-primary-600 text-primary-600 bg-white font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100/50'
+                }`}
+              >
+                <Clock size={16} />
+                <span>3. Work Hours</span>
               </button>
             </div>
             
-            <div className="p-6 max-h-[75vh] overflow-y-auto">
-              <form id="doctor-form" onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              {/* Modal Body */}
+              <div className="p-6 space-y-5 overflow-y-auto flex-1 bg-white">
                 
-                {/* Headers */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4 hidden md:grid">
-                  <div className="border-b pb-2"><h4 className="font-semibold text-gray-700">Basic Information</h4></div>
-                  <div className="border-b pb-2"><h4 className="font-semibold text-gray-700">Professional Details</h4></div>
-                </div>
+                {modalTab === 'basic' && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Full Name *</label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          <input 
+                            type="text" 
+                            name="name"
+                            required
+                            placeholder="John Doe"
+                            value={formData.name} 
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-gray-800 text-sm font-medium" 
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Phone Number *</label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          <input 
+                            type="tel" 
+                            name="phone"
+                            required
+                            pattern="[0-9+\s\-]+" 
+                            minLength="10"
+                            placeholder="+91 98765 43210"
+                            value={formData.phone} 
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-gray-800 text-sm font-medium" 
+                          />
+                        </div>
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                  
-                  {/* Row 1 */}
-                  <div>
-                    <h4 className="font-semibold text-gray-700 border-b pb-2 mb-4 md:hidden">Basic Information</h4>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                    <input type="text" name="name" required value={formData.name} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-shadow" placeholder="e.g. John Doe" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-700 border-b pb-2 mb-4 md:hidden">Professional Details</h4>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
-                    <select name="specialization" required value={formData.specialization} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white transition-shadow">
-                      <option value="">Select Specialization...</option>
-                      {SPECIALIZATIONS.map(spec => (
-                        <option key={spec} value={spec}>{spec}</option>
-                      ))}
-                    </select>
-                  </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email Address *</label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          <input 
+                            type="email" 
+                            name="email"
+                            required
+                            placeholder="doctor@clinic.com"
+                            value={formData.email} 
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-gray-800 text-sm font-medium" 
+                          />
+                        </div>
+                      </div>
 
-                  {/* Row 2 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                    <input type="email" name="email" required value={formData.email} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-shadow" placeholder="doctor@clinic.com" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Qualification</label>
-                    <select name="qualification" required value={formData.qualification} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white transition-shadow">
-                      <option value="">Select Qualification...</option>
-                      {QUALIFICATIONS.map(qual => (
-                        <option key={qual} value={qual}>{qual}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Row 3 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="tel" name="phone" required pattern="[0-9+\s\-]+" minLength="10" value={formData.phone} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-shadow" placeholder="+1 234 567 8900" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Registration Number</label>
-                    <input type="text" name="registration_number" required value={formData.registration_number} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-shadow" placeholder="e.g. MED123456" />
-                  </div>
-
-                  {/* Row 4 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <div className="relative">
-                      <input 
-                        type={showPassword ? "text" : "password"} 
-                        name="password" 
-                        required={!editingId} 
-                        value={formData.password} 
-                        onChange={handleInputChange} 
-                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none pr-10 transition-shadow" 
-                        placeholder={editingId ? "Leave blank to keep unchanged" : "Secure password"}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                          {editingId ? 'New Password' : 'Password *'}
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          <input 
+                            type={showPassword ? "text" : "password"} 
+                            name="password"
+                            required={!editingId}
+                            placeholder={editingId ? 'Leave blank to keep unchanged' : 'Secure password'}
+                            value={formData.password} 
+                            onChange={handleInputChange}
+                            className="w-full pl-9 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-gray-800 text-sm font-medium" 
+                          />
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee (₹)</label>
-                    <input type="number" name="consultation_fee" required min="0" step="50" value={formData.consultation_fee} onChange={handleInputChange} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-shadow" placeholder="500" />
+                )}
+
+                {modalTab === 'professional' && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Specialization *</label>
+                        <select 
+                          name="specialization"
+                          required
+                          value={formData.specialization} 
+                          onChange={handleInputChange}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm font-medium text-gray-800"
+                        >
+                          <option value="">Select Specialization...</option>
+                          {SPECIALIZATIONS.map(spec => (
+                            <option key={spec} value={spec}>{spec}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Qualification *</label>
+                        <select 
+                          name="qualification"
+                          required
+                          value={formData.qualification} 
+                          onChange={handleInputChange}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm font-medium text-gray-800"
+                        >
+                          <option value="">Select Qualification...</option>
+                          {QUALIFICATIONS.map(qual => (
+                            <option key={qual} value={qual}>{qual}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Registration Number *</label>
+                        <input 
+                          type="text" 
+                          name="registration_number"
+                          required
+                          placeholder="e.g. MED123456"
+                          value={formData.registration_number} 
+                          onChange={handleInputChange}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium text-gray-800" 
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Consultation Fee (₹) *</label>
+                        <input 
+                          type="number" 
+                          name="consultation_fee"
+                          required
+                          min="0"
+                          step="50"
+                          placeholder="500"
+                          value={formData.consultation_fee} 
+                          onChange={handleInputChange}
+                          className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium text-gray-800" 
+                        />
+                      </div>
+                    </div>
                   </div>
+                )}
 
-                </div>
-
-                  {/* Available Timings Widget */}
-                  <div className="col-span-2 mt-4 border-t pt-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="font-semibold text-gray-700">Available Timings</h4>
+                {modalTab === 'timings' && (
+                  <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="flex justify-between items-center mb-1">
+                      <h4 className="font-semibold text-gray-700 text-sm">Doctor Shift Timings</h4>
                       <button 
                         type="button" 
                         onClick={handleAddSlot} 
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center border border-blue-600 rounded-lg px-4 py-1.5 transition-colors hover:bg-blue-50"
+                        className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center border border-blue-600 rounded-lg px-3 py-1 transition-colors hover:bg-blue-50 cursor-pointer"
                       >
-                        <Plus size={16} className="mr-1" /> Add Slot
+                        <Plus size={14} className="mr-0.5" /> Add Slot
                       </button>
                     </div>
-                    
-                    <div className="space-y-4">
+
+                    <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-1">
                       {formData.available_timings.map((slot, index) => (
-                        <div key={index} className="relative bg-white p-5 rounded-xl border border-gray-200 flex flex-col space-y-4">
+                        <div key={index} className="relative bg-slate-50 p-4 rounded-xl border border-gray-100 flex flex-col space-y-3">
                           {formData.available_timings.length > 1 && (
                             <button 
                               type="button" 
                               onClick={() => handleRemoveSlot(index)} 
-                              className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
+                              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
                               title="Remove Slot"
                             >
-                              <X size={20} />
+                              <X size={18} />
                             </button>
                           )}
                           
                           <div>
-                            <p className="text-sm text-gray-500 mb-3">Select Days</p>
-                            <div className="flex flex-wrap gap-3">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Days</p>
+                            <div className="flex flex-wrap gap-2">
                               {DAYS_OF_WEEK.map(day => (
                                 <button
                                   key={day}
                                   type="button"
                                   onClick={() => toggleDay(index, day)}
-                                  className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-semibold transition-all border ${
+                                  className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold transition-all border cursor-pointer ${
                                     (slot.days || []).includes(day) 
-                                      ? 'bg-blue-600 border-blue-600 text-white' 
+                                      ? 'bg-blue-600 border-blue-600 text-white shadow-sm' 
                                       : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                                   }`}
                                 >
@@ -418,13 +565,13 @@ export default function Doctors() {
                           </div>
                           
                           <div>
-                            <p className="text-sm text-gray-500 mb-3">Select Time</p>
-                            <div className="flex items-center space-x-3 w-full">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Select Time</p>
+                            <div className="flex items-center space-x-2.5 w-full">
                               <TimeSelect 
                                 value={slot.start} 
                                 onChange={val => handleTimingChange(index, 'start', val)}
                               />
-                              <span className="text-gray-400 font-medium">to</span>
+                              <span className="text-gray-400 font-medium text-xs">to</span>
                               <TimeSelect 
                                 value={slot.end} 
                                 onChange={val => handleTimingChange(index, 'end', val)}
@@ -435,27 +582,88 @@ export default function Doctors() {
                       ))}
                     </div>
                   </div>
+                )}
 
-              </form>
-            </div>
-            
-            <div className="bg-gray-50 px-6 py-4 border-t flex justify-end space-x-3 rounded-b-xl">
-              <button 
-                type="button" 
-                onClick={() => setShowModal(false)} 
-                className="px-5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit"
-                form="doctor-form"
-                className="px-5 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors shadow-sm"
-              >
-                {editingId ? 'Save Changes' : 'Add Doctor'}
-              </button>
-            </div>
+              </div>
 
+              {/* Modal Footer with Tab-Specific Controls */}
+              <div className="bg-gray-50 px-6 py-4.5 border-t border-gray-100 flex justify-between items-center shrink-0">
+                {modalTab === 'basic' && (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => setShowModal(false)}
+                      className="px-4 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm cursor-pointer shadow-sm bg-white"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (!formData.name || !formData.email || !formData.phone || (!editingId && !formData.password)) {
+                          alert("Please fill all required fields in the Basic Info tab.");
+                          return;
+                        }
+                        setModalTab('professional');
+                      }}
+                      className="px-4 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-sm cursor-pointer shadow-sm flex items-center space-x-1.5"
+                    >
+                      <span>Professional Info</span>
+                      <ChevronRight size={16} />
+                    </button>
+                  </>
+                )}
+
+                {modalTab === 'professional' && (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => setModalTab('basic')}
+                      className="px-4 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm cursor-pointer shadow-sm bg-white flex items-center space-x-1.5"
+                    >
+                      <ChevronLeft size={16} />
+                      <span>Basic Info</span>
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (!formData.specialization || !formData.qualification || !formData.registration_number || !formData.consultation_fee) {
+                          alert("Please fill all required fields in the Professional Info tab.");
+                          return;
+                        }
+                        setModalTab('timings');
+                      }}
+                      className="px-4 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-sm cursor-pointer shadow-sm flex items-center space-x-1.5"
+                    >
+                      <span>Work Hours</span>
+                      <ChevronRight size={16} />
+                    </button>
+                  </>
+                )}
+
+                {modalTab === 'timings' && (
+                  <>
+                    <button 
+                      type="button"
+                      onClick={() => setModalTab('professional')}
+                      className="px-4 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-sm cursor-pointer shadow-sm bg-white flex items-center space-x-1.5"
+                    >
+                      <ChevronLeft size={16} />
+                      <span>Professional Info</span>
+                    </button>
+                    <button 
+                      type="submit"
+                      className="px-5 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-colors text-sm cursor-pointer shadow-sm"
+                    >
+                      {editingId ? 'Save Changes' : 'Register Doctor'}
+                    </button>
+                  </>
+                )}
+              </div>
+
+            </form>
           </div>
         </div>
       )}

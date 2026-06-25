@@ -1,14 +1,70 @@
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import AuthContext from '../../context/AuthContext';
-import { Mail, Phone, Building2, Shield, User as UserIcon } from 'lucide-react';
+import api from '../../api/axios';
+import { Mail, Phone, Building2, Shield, User as UserIcon, Save } from 'lucide-react';
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
+  const [clinicData, setClinicData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: ''
+  });
+  const [loadingClinic, setLoadingClinic] = useState(false);
+  const [savingClinic, setSavingClinic] = useState(false);
+  const [successClinic, setSuccessClinic] = useState('');
+
+  useEffect(() => {
+    if (user?.role === 'ClinicAdmin') {
+      fetchClinicSettings();
+    }
+  }, [user]);
+
+  const fetchClinicSettings = async () => {
+    try {
+      setLoadingClinic(true);
+      const { data } = await api.get('/clinic-admin/settings');
+      if (data) {
+        setClinicData({
+          name: data.name || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          address: data.address || ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoadingClinic(false);
+    }
+  };
+
+  const handleClinicSubmit = async (e) => {
+    e.preventDefault();
+    setSavingClinic(true);
+    setSuccessClinic('');
+    try {
+      const { data } = await api.put('/clinic-admin/settings', clinicData);
+      setClinicData({
+        name: data.name || '',
+        email: data.email || '',
+        phone: data.phone || '',
+        address: data.address || ''
+      });
+      setSuccessClinic('Clinic settings updated successfully!');
+      setTimeout(() => setSuccessClinic(''), 3000);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error updating settings');
+    } finally {
+      setSavingClinic(false);
+    }
+  };
 
   if (!user) return <div className="p-8">Loading profile...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-text-primary">My Profile</h1>
         <p className="text-text-secondary mt-1">Manage your personal information and settings</p>
@@ -105,6 +161,102 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Clinic Settings Section (Only for ClinicAdmin) */}
+      {user.role === 'ClinicAdmin' && (
+        <div className="bg-white rounded-[20px] shadow-subtle border border-border-light overflow-hidden animate-in fade-in duration-200">
+          <div className="p-8 border-b border-border-light">
+            <h3 className="text-lg font-bold text-text-primary flex items-center">
+              <Building2 className="mr-2 text-primary" size={20} />
+              Clinic Settings
+            </h3>
+            <p className="text-sm text-text-secondary mt-1">
+              Update clinic profile and public information.
+            </p>
+          </div>
+
+          {successClinic && (
+            <div className="mx-8 mt-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+              <p className="text-sm text-green-700">{successClinic}</p>
+            </div>
+          )}
+
+          {loadingClinic ? (
+            <div className="p-8 text-center text-text-secondary">Loading clinic settings...</div>
+          ) : (
+            <form onSubmit={handleClinicSubmit} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-xs text-text-secondary font-semibold block mb-1.5 uppercase tracking-wider">
+                    Clinic Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    value={clinicData.name}
+                    onChange={(e) => setClinicData({ ...clinicData, name: e.target.value })}
+                    className="w-full border border-border-light rounded-xl px-4 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-text-secondary font-semibold block mb-1.5 uppercase tracking-wider">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={clinicData.email}
+                    onChange={(e) => setClinicData({ ...clinicData, email: e.target.value })}
+                    className="w-full border border-border-light rounded-xl px-4 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-text-secondary font-semibold block mb-1.5 uppercase tracking-wider">
+                    Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    name="phone"
+                    required
+                    value={clinicData.phone}
+                    onChange={(e) => setClinicData({ ...clinicData, phone: e.target.value })}
+                    className="w-full border border-border-light rounded-xl px-4 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="text-xs text-text-secondary font-semibold block mb-1.5 uppercase tracking-wider">
+                    Physical Address
+                  </label>
+                  <textarea
+                    name="address"
+                    required
+                    rows={3}
+                    value={clinicData.address}
+                    onChange={(e) => setClinicData({ ...clinicData, address: e.target.value })}
+                    className="w-full border border-border-light rounded-xl px-4 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4 border-t border-border-light">
+                <button
+                  type="submit"
+                  disabled={savingClinic}
+                  className="flex items-center px-6 py-3 bg-primary text-white rounded-full hover:bg-primary-600 focus:outline-none transition-all shadow-primary cursor-pointer disabled:opacity-50 font-semibold text-sm"
+                >
+                  <Save size={16} className="mr-2" />
+                  {savingClinic ? 'Saving...' : 'Save Settings'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 }

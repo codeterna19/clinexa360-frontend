@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, CreditCard, Clock, Bell, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Stethoscope, Users, Calendar, CreditCard, Clock, Bell, ChevronDown } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
@@ -22,7 +22,6 @@ export default function ClinicAdminLayout() {
     { name: 'Shifts', path: '/clinic-admin/shifts', icon: Clock },
     { name: 'Appointments', path: '/clinic-admin/appointments', icon: Calendar },
     { name: 'Billing & Invoices', path: '/clinic-admin/billing', icon: CreditCard },
-    { name: 'Clinic Settings', path: '/clinic-admin/settings', icon: Settings },
   ];
 
   return (

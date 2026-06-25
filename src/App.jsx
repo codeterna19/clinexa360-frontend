@@ -19,7 +19,6 @@ import Patients from './pages/ClinicAdmin/Patients';
 import Shifts from './pages/ClinicAdmin/Shifts';
 import Appointments from './pages/ClinicAdmin/Appointments';
 import Billing from './pages/ClinicAdmin/Billing';
-import ClinicSettings from './pages/ClinicAdmin/ClinicSettings';
 
 import ReceptionistLayout from './layouts/ReceptionistLayout';
 import ReceptionistDashboard from './pages/Receptionist/ReceptionistDashboard';
@@ -113,7 +112,7 @@ function App() {
           <Route path="shifts" element={<Shifts />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="billing" element={<Billing />} />
-          <Route path="settings" element={<ClinicSettings />} />
+          <Route path="settings" element={<Navigate to="/clinic-admin/profile" replace />} />
           <Route path="profile" element={<Profile />} />
         </Route>
 

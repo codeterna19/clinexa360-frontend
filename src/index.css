@@ -2,16 +2,16 @@
 @import "@fontsource/inter";
 
 @theme {
-  --color-primary: #7F56D9;
-  --color-primary-light: #F3EEFF;
-  --color-primary-50: #F3EEFF;
-  --color-primary-100: #E2D7FC;
-  --color-primary-200: #C9B3F9;
-  --color-primary-500: #7F56D9;
-  --color-primary-600: #6941C6;
-  --color-primary-700: #53389E;
+  --color-primary: #0080FC;
+  --color-primary-light: #E6F2FF;
+  --color-primary-50: #E6F2FF;
+  --color-primary-100: #CCE5FF;
+  --color-primary-200: #99CBFF;
+  --color-primary-500: #0080FC;
+  --color-primary-600: #0067CB;
+  --color-primary-700: #004D9A;
   
-  --color-secondary: #0080FC;
+  --color-secondary: #7F56D9;
   
   --color-dark: #040F1F;
   --color-light: #FFFFFF;
@@ -26,7 +26,7 @@
   --font-sans: "Inter", sans-serif;
   
   --shadow-subtle: 0 2px 8px rgba(0,0,0,0.03);
-  --shadow-primary: 0 4px 10px rgba(127,86,217,0.2);
+  --shadow-primary: 0 4px 10px rgba(0,128,252,0.2);
 }
 
 @layer base {

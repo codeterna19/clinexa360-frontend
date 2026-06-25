@@ -614,7 +614,7 @@ export default function Appointments() {
       {/* Book/Edit Appointment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
               <h2 className="text-lg font-bold text-gray-900">
                 {editingId ? 'Edit Appointment Details' : 'Book New Appointment'}
@@ -628,47 +628,49 @@ export default function Appointments() {
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-sm font-semibold text-gray-700">Patient *</label>
-                  <button 
-                    type="button" 
-                    onClick={() => setIsQuickAddOpen(true)} 
-                    className="text-xs font-bold text-primary hover:underline flex items-center"
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-sm font-semibold text-gray-700">Patient *</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setIsQuickAddOpen(true)} 
+                      className="text-xs font-bold text-primary hover:underline flex items-center"
+                    >
+                      <Plus size={12} className="mr-0.5" /> Quick Add
+                    </button>
+                  </div>
+                  <select 
+                    required
+                    value={formData.patient_id} 
+                    onChange={e => setFormData({...formData, patient_id: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm font-medium text-gray-700"
                   >
-                    <Plus size={12} className="mr-0.5" /> Quick Add
-                  </button>
+                    <option value="">Select Patient...</option>
+                    {patients.map(p => (
+                      <option key={p._id} value={p._id}>{p.name}</option>
+                    ))}
+                  </select>
                 </div>
-                <select 
-                  required
-                  value={formData.patient_id} 
-                  onChange={e => setFormData({...formData, patient_id: e.target.value})}
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
-                >
-                  <option value="">Select Patient...</option>
-                  {patients.map(p => (
-                    <option key={p._id} value={p._id}>{p.name} ({p.phone || p.email})</option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor *</label>
-                <select 
-                  required
-                  value={formData.doctor_id} 
-                  onChange={e => setFormData({...formData, doctor_id: e.target.value})}
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
-                >
-                  <option value="">Select Doctor...</option>
-                  {doctors.map(d => (
-                    <option key={d._id} value={d._id}>Dr. {d.name} ({d.specialization})</option>
-                  ))}
-                </select>
-              </div>
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-sm font-semibold text-gray-700">Doctor *</label>
+                  </div>
+                  <select 
+                    required
+                    value={formData.doctor_id} 
+                    onChange={e => setFormData({...formData, doctor_id: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm"
+                  >
+                    <option value="">Select Doctor...</option>
+                    {doctors.map(d => (
+                      <option key={d._id} value={d._id}>Dr. {d.name} ({d.specialization})</option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date *</label>
                   <input 
@@ -676,9 +678,10 @@ export default function Appointments() {
                     required
                     value={formData.date} 
                     onChange={e => setFormData({...formData, date: e.target.value})}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white" 
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm" 
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time *</label>
                   <TimeSelect 
@@ -686,15 +689,13 @@ export default function Appointments() {
                     onChange={val => setFormData({...formData, time: val})}
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type *</label>
                   <select 
                     value={formData.type} 
                     onChange={e => setFormData({...formData, type: e.target.value})}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm"
                   >
                     <option value="Consultation">Consultation</option>
                     <option value="Follow-up">Follow-up</option>
@@ -703,13 +704,13 @@ export default function Appointments() {
                   </select>
                 </div>
 
-                {editingId && (
+                {editingId ? (
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status *</label>
                     <select 
                       value={formData.status} 
                       onChange={e => setFormData({...formData, status: e.target.value})}
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm"
                     >
                       <option value="Pending">Pending</option>
                       <option value="Confirmed">Confirmed</option>
@@ -718,21 +719,23 @@ export default function Appointments() {
                       <option value="No Show">No Show</option>
                     </select>
                   </div>
+                ) : (
+                  <div></div>
                 )}
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  Description / Reason {formData.type === 'Direct' && '*'}
-                </label>
-                <textarea 
-                  required={formData.type === 'Direct'}
-                  value={formData.description} 
-                  onChange={e => setFormData({...formData, description: e.target.value})}
-                  placeholder={formData.type === 'Direct' ? "Reason for direct appointment (required)..." : "Reason for visit or clinical notes..."}
-                  rows="3"
-                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white resize-none text-sm font-medium"
-                />
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Description / Reason {formData.type === 'Direct' && '*'}
+                  </label>
+                  <textarea 
+                    required={formData.type === 'Direct'}
+                    value={formData.description} 
+                    onChange={e => setFormData({...formData, description: e.target.value})}
+                    placeholder={formData.type === 'Direct' ? "Reason for direct appointment (required)..." : "Reason for visit or clinical notes..."}
+                    rows="3"
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white resize-none text-sm font-medium"
+                  />
+                </div>
               </div>
 
               <div className="bg-gray-50 -mx-6 -mb-6 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3 mt-6">
