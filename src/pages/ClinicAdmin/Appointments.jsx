@@ -507,11 +507,11 @@ export default function Appointments() {
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end space-y-2">
+                  <div className="flex items-center space-x-3 shrink-0">
                     <select
                       value={apt.status}
                       onChange={(e) => handleStatusChange(apt._id, e.target.value)}
-                      className={`px-3 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(apt.status)} border cursor-pointer outline-none appearance-none`}
+                      className={`px-4 py-1.5 rounded-full text-sm font-semibold ${getStatusColor(apt.status)} border cursor-pointer outline-none appearance-none shadow-sm transition-all`}
                       style={{ textAlignLast: 'center' }}
                       title="Update Status"
                     >
