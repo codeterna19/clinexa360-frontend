@@ -1,7 +1,8 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FlaskConical, FileText, LogOut } from 'lucide-react';
+import { LayoutDashboard, FlaskConical, FileText } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import UserDropdown from '../components/UserDropdown';
 
 export default function LabAssistantLayout() {
   const { logout, user } = useContext(AuthContext);
@@ -36,15 +37,8 @@ export default function LabAssistantLayout() {
           </Link>
         </nav>
 
-        <div className="p-4 border-t border-border-light">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Account</div>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center space-x-3 h-12 px-4 w-full rounded-xl hover:bg-red-50 text-text-secondary hover:text-danger transition-colors cursor-pointer"
-          >
-            <LogOut size={20} className="text-gray-400" />
-            <span>Logout</span>
-          </button>
+        <div className="p-4 border-t border-border-light text-center text-xs text-gray-400 font-medium">
+          v1.0.0
         </div>
       </aside>
 
@@ -55,15 +49,7 @@ export default function LabAssistantLayout() {
           <h2 className="text-xl font-semibold text-text-primary">{user?.clinic_id?.name || 'Clinic Portal'}</h2>
           
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <div className="hidden sm:block text-right">
-                <p className="text-sm font-medium text-text-primary">{user?.name || 'Lab Assistant'}</p>
-                <p className="text-xs text-text-secondary">Lab Assistant</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold uppercase border border-primary-200">
-                {user?.name?.substring(0, 2) || 'LA'}
-              </div>
-            </div>
+            <UserDropdown user={user} handleLogout={handleLogout} roleName="Lab Assistant" />
           </div>
         </header>
 

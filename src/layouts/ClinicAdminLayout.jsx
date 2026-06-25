@@ -1,7 +1,8 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, LogOut, CreditCard, Clock, Bell, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, CreditCard, Clock, Bell, ChevronDown } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import UserDropdown from '../components/UserDropdown';
 
 export default function ClinicAdminLayout() {
   const { logout, user } = useContext(AuthContext);
@@ -55,15 +56,8 @@ export default function ClinicAdminLayout() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border-light">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Account</div>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center space-x-3 h-12 px-4 w-full rounded-xl hover:bg-red-50 text-text-secondary hover:text-danger transition-colors"
-          >
-            <LogOut size={20} className="text-gray-400" />
-            <span>Logout</span>
-          </button>
+        <div className="p-4 border-t border-border-light text-center text-xs text-gray-400 font-medium">
+          v1.0.0
         </div>
       </aside>
 
@@ -89,15 +83,7 @@ export default function ClinicAdminLayout() {
               <ChevronDown size={14} className="text-gray-400" />
             </button>
             <div className="h-8 w-px bg-border-light mx-2 hidden sm:block"></div>
-            <div className="flex items-center space-x-3 cursor-pointer">
-              <div className="hidden sm:block text-right">
-                <p className="text-sm font-medium text-text-primary">{user?.name}</p>
-                <p className="text-xs text-text-secondary">Clinic Admin</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold uppercase border border-primary-200">
-                {user?.name?.substring(0, 2) || 'CA'}
-              </div>
-            </div>
+            <UserDropdown user={user} handleLogout={handleLogout} roleName="Clinic Admin" />
           </div>
         </header>
 
