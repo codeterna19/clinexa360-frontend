@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, User, Phone, Mail, FileText, CheckCircle, X, ShieldAlert, Heart, Lock, Calendar, ClipboardList, ChevronRight, ChevronLeft } from 'lucide-react';
 import api from '../../api/axios';
 
@@ -25,9 +26,18 @@ export default function Patients() {
     medical_history: ''
   });
 
+  const location = useLocation();
+
   useEffect(() => {
     fetchPatients();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      handleOpenModal();
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const fetchPatients = async () => {
     try {

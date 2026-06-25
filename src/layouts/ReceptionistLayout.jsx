@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, UserPlus, CreditCard, Settings } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, CreditCard, Settings } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
@@ -27,9 +27,9 @@ export default function ReceptionistLayout() {
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
-          <Link to="/receptionist/registration" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <UserPlus size={20} />
-            <span>Patient Registration</span>
+          <Link to="/receptionist/patients" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
+            <Users size={20} />
+            <span>Patient Management</span>
           </Link>
           <Link to="/receptionist/appointments" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
             <Calendar size={20} />

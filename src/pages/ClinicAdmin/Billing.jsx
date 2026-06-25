@@ -56,14 +56,29 @@ export default function Billing() {
 
   const fetchDropdowns = async () => {
     try {
-      const [resPatients, resAppointments, resDoctors] = await Promise.all([
-        api.get('/patients'),
-        api.get('/appointments'),
-        api.get('/clinic-admin/doctors')
-      ]);
+      const resPatients = await api.get('/patients');
+      const resAppointments = await api.get('/appointments');
       setPatients(resPatients.data);
       setAppointments(resAppointments.data);
-      setDoctors(resDoctors.data);
+
+      let doctorsData = [];
+      try {
+        const res = await api.get('/doctors');
+        doctorsData = res.data;
+      } catch (err) {
+        try {
+          const res = await api.get('/users?role=Doctor');
+          doctorsData = res.data;
+        } catch (err2) {
+          try {
+            const res = await api.get('/clinic-admin/doctors');
+            doctorsData = res.data;
+          } catch (err3) {
+            console.error('Failed to fetch doctors from all endpoints:', err3);
+          }
+        }
+      }
+      setDoctors(doctorsData);
     } catch (error) {
       console.error('Error fetching dropdowns:', error);
     }

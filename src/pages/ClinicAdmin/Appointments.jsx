@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Receipt, X } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function Appointments() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -61,6 +62,13 @@ export default function Appointments() {
     fetchDoctorsAndPatients();
   }, []);
 
+  useEffect(() => {
+    if (location.state?.openBookModal) {
+      handleOpenModal();
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   const fetchAppointments = async () => {
     try {
       const { data } = await api.get('/appointments');
@@ -74,12 +82,27 @@ export default function Appointments() {
 
   const fetchDoctorsAndPatients = async () => {
     try {
-      const [resDoctors, resPatients] = await Promise.all([
-        api.get('/clinic-admin/doctors'),
-        api.get('/patients')
-      ]);
-      setDoctors(resDoctors.data);
+      const resPatients = await api.get('/patients');
       setPatients(resPatients.data);
+
+      let doctorsData = [];
+      try {
+        const res = await api.get('/doctors');
+        doctorsData = res.data;
+      } catch (err) {
+        try {
+          const res = await api.get('/users?role=Doctor');
+          doctorsData = res.data;
+        } catch (err2) {
+          try {
+            const res = await api.get('/clinic-admin/doctors');
+            doctorsData = res.data;
+          } catch (err3) {
+            console.error('Failed to fetch doctors from all endpoints:', err3);
+          }
+        }
+      }
+      setDoctors(doctorsData);
     } catch (error) {
       console.error('Error fetching doctors/patients:', error);
     }

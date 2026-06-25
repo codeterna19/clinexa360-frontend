@@ -143,7 +143,7 @@ function App() {
         >
           <Route index element={<ReceptionistDashboard />} />
           <Route path="appointments" element={<Appointments />} />
-          <Route path="registration" element={<PatientRegistration />} />
+          <Route path="patients" element={<Patients />} />
           <Route path="billing" element={<Billing />} />
           <Route path="profile" element={<Profile />} />
         </Route>
