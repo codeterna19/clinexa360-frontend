@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, UserPlus, CreditCard, LogOut } from 'lucide-react';
+import { LayoutDashboard, Calendar, UserPlus, CreditCard, LogOut, Settings } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 
