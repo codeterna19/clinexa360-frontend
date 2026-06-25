@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import api from '../../api/axios';
-import { Plus, Building, MapPin, Phone, Mail, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import AuthContext from '../../context/AuthContext';
+import { Plus, Building, MapPin, Phone, Mail, MoreVertical, Edit, Trash2 } from 'lucide-react';
 
 export default function Clinics() {
+  const { user } = useContext(AuthContext);
   const [clinics, setClinics] = useState([]);
-  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showEditPassword, setShowEditPassword] = useState(false);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -20,8 +19,7 @@ export default function Clinics() {
     adminName: '',
     adminEmail: '',
     adminPhone: '',
-    adminPassword: '',
-    subscriptionPlan: ''
+    adminPassword: ''
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -35,21 +33,16 @@ export default function Clinics() {
     adminPhone: '',
     adminPassword: ''
   });
-
   useEffect(() => {
-    fetchData();
+    fetchClinics();
   }, []);
 
-  const fetchData = async () => {
+  const fetchClinics = async () => {
     try {
-      const [clinicsRes, plansRes] = await Promise.all([
-        api.get('/clinics'),
-        api.get('/plans')
-      ]);
-      setClinics(clinicsRes.data);
-      setPlans(plansRes.data.filter(p => p.isActive));
+      const { data } = await api.get('/clinics');
+      setClinics(data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching clinics:', error);
     } finally {
       setLoading(false);
     }
@@ -66,77 +59,66 @@ export default function Clinics() {
       setShowModal(false);
       setFormData({
         name: '', address: '', phone: '', email: '',
-        adminName: '', adminEmail: '', adminPhone: '', adminPassword: '', subscriptionPlan: ''
+        adminName: '', adminEmail: '', adminPhone: '', adminPassword: ''
       });
-      fetchData();
+      fetchClinics();
     } catch (error) {
       alert(error.response?.data?.message || 'Error creating clinic');
     }
   };
 
-  const handleEditClick = async (clinic) => {
-    try {
-      const { data: adminData } = await api.get(`/clinics/${clinic._id}/admin`);
-      setEditFormData({
-        _id: clinic._id,
-        name: clinic.name,
-        address: clinic.address,
-        phone: clinic.phone,
-        email: clinic.email,
-        adminName: adminData.name,
-        adminEmail: adminData.email,
-        adminPhone: adminData.phone,
-        adminPassword: '' // Blank, user can type new password if they want
-      });
-      setShowEditModal(true);
-    } catch (error) {
-      alert('Error fetching admin details');
-    }
+  const handleEditClick = (clinic) => {
+    setEditFormData({
+      _id: clinic._id,
+      name: clinic.name,
+      address: clinic.address,
+      phone: clinic.phone,
+      email: clinic.email,
+      adminName: clinic.adminName || clinic.admin?.name || '',
+      adminEmail: clinic.adminEmail || clinic.admin?.email || '',
+      adminPhone: clinic.adminPhone || clinic.admin?.phone || '',
+      adminPassword: ''
+    });
+    setShowEditModal(true);
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/clinics/${editFormData._id}`, {
+      const payload = {
         name: editFormData.name,
         address: editFormData.address,
         phone: editFormData.phone,
-        email: editFormData.email
-      });
-
-      const adminPayload = {
+        email: editFormData.email,
         adminName: editFormData.adminName,
         adminEmail: editFormData.adminEmail,
-        adminPhone: editFormData.adminPhone,
+        adminPhone: editFormData.adminPhone
       };
       if (editFormData.adminPassword) {
-        adminPayload.adminPassword = editFormData.adminPassword;
+        payload.adminPassword = editFormData.adminPassword;
       }
-      
-      await api.put(`/clinics/${editFormData._id}/admin`, adminPayload);
-
+      await api.put(`/clinics/${editFormData._id}`, payload);
       setShowEditModal(false);
-      fetchData();
+      fetchClinics();
     } catch (error) {
       alert(error.response?.data?.message || 'Error updating clinic');
     }
   };
-
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
     try {
       await api.put(`/clinics/${id}/status`, { status: newStatus });
-      fetchData();
+      fetchClinics();
     } catch (error) {
       alert(error.response?.data?.message || 'Error updating status');
     }
   };
 
-  const handleDeleteClick = async (id) => {
-    if (window.confirm('Are you sure you want to delete this clinic and all its users? This action cannot be undone.')) {
+  const handleDeleteClinic = async (id) => {
+    if (window.confirm('Are you sure you want to delete this clinic? This action cannot be undone.')) {
       try {
         await api.delete(`/clinics/${id}`);
-        fetchData();
+        fetchClinics();
       } catch (error) {
         alert(error.response?.data?.message || 'Error deleting clinic');
       }
@@ -168,7 +150,7 @@ export default function Clinics() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clinic Details</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status & Plan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -203,14 +185,11 @@ export default function Clinics() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full mb-1 ${
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         clinic.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {clinic.status}
                       </span>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Plan: {clinic.subscriptionPlan?.name || 'None'}
-                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(clinic.createdAt).toLocaleDateString()}
@@ -219,26 +198,28 @@ export default function Clinics() {
                       <div className="flex justify-end space-x-2">
                         <button 
                           onClick={() => handleEditClick(clinic)}
-                          className="px-3 py-1 rounded-md transition-colors bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center"
+                          className="px-3 py-1 rounded-md transition-colors bg-blue-50 text-blue-600 hover:bg-blue-100"
                         >
-                          <Edit size={14} className="mr-1" /> Edit
+                          Edit
                         </button>
                         <button 
                           onClick={() => handleToggleStatus(clinic._id, clinic.status)}
-                          className={`px-3 py-1 rounded-md transition-colors flex items-center ${
+                          className={`px-3 py-1 rounded-md transition-colors ${
                             clinic.status === 'Active' 
-                              ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100' 
+                              ? 'bg-red-50 text-red-600 hover:bg-red-100' 
                               : 'bg-green-50 text-green-600 hover:bg-green-100'
                           }`}
                         >
                           {clinic.status === 'Active' ? 'Suspend' : 'Activate'}
                         </button>
-                        <button 
-                          onClick={() => handleDeleteClick(clinic._id)}
-                          className="px-3 py-1 rounded-md transition-colors bg-red-50 text-red-600 hover:bg-red-100 flex items-center"
-                        >
-                          <Trash2 size={14} className="mr-1" /> Delete
-                        </button>
+                        {['SuperAdmin', 'Admin'].includes(user?.role) && (
+                          <button 
+                            onClick={() => handleDeleteClinic(clinic._id)}
+                            className="px-3 py-1 rounded-md transition-colors bg-rose-50 text-rose-600 hover:bg-rose-100"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -278,15 +259,6 @@ export default function Clinics() {
                       <label className="block text-sm font-medium text-gray-700">Clinic Email</label>
                       <input type="email" name="email" required value={formData.email} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
                     </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">Subscription Plan</label>
-                      <select name="subscriptionPlan" value={formData.subscriptionPlan} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm">
-                        <option value="">Select a Plan</option>
-                        {plans.map(plan => (
-                          <option key={plan._id} value={plan._id}>{plan.name} (₹{plan.price})</option>
-                        ))}
-                      </select>
-                    </div>
 
                     <div className="col-span-2 mt-4"><h4 className="font-semibold text-gray-700 border-b pb-2">Clinic Administrator Details</h4></div>
                     <div>
@@ -303,12 +275,7 @@ export default function Clinics() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Admin Password</label>
-                      <div className="relative mt-1">
-                        <input type={showPassword ? "text" : "password"} name="adminPassword" required value={formData.adminPassword} onChange={handleInputChange} className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
+                      <input type="password" name="adminPassword" required value={formData.adminPassword} onChange={handleInputChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
                     </div>
                   </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 border-t rounded-b-xl">
@@ -324,7 +291,6 @@ export default function Clinics() {
           </div>
         </div>
       )}
-
       {/* Edit Clinic Modal */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">
@@ -369,13 +335,8 @@ export default function Clinics() {
                       <input type="text" required value={editFormData.adminPhone} onChange={(e) => setEditFormData({...editFormData, adminPhone: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">New Password <span className="font-normal text-gray-400">(optional)</span></label>
-                      <div className="relative mt-1">
-                        <input type={showEditPassword ? "text" : "password"} value={editFormData.adminPassword} onChange={(e) => setEditFormData({...editFormData, adminPassword: e.target.value})} className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
-                        <button type="button" onClick={() => setShowEditPassword(!showEditPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                          {showEditPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </button>
-                      </div>
+                      <label className="block text-sm font-medium text-gray-700">Admin Password (Leave blank to keep unchanged)</label>
+                      <input type="password" value={editFormData.adminPassword} onChange={(e) => setEditFormData({...editFormData, adminPassword: e.target.value})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm" />
                     </div>
                   </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6 border-t rounded-b-xl">

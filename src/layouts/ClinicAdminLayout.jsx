@@ -1,62 +1,67 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, LogOut, CreditCard, UserPlus } from 'lucide-react';
+import { LayoutDashboard, Stethoscope, Users, Calendar, Settings, LogOut, CreditCard, Clock, Bell, ChevronDown } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 
 export default function ClinicAdminLayout() {
   const { logout, user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const navItems = [
+    { name: 'Dashboard', path: '/clinic-admin', icon: LayoutDashboard },
+    { name: 'Doctors', path: '/clinic-admin/doctors', icon: Stethoscope },
+    { name: 'Staff', path: '/clinic-admin/staff', icon: Users },
+    { name: 'Patients', path: '/clinic-admin/patients', icon: Users },
+    { name: 'Shifts', path: '/clinic-admin/shifts', icon: Clock },
+    { name: 'Appointments', path: '/clinic-admin/appointments', icon: Calendar },
+    { name: 'Billing & Invoices', path: '/clinic-admin/billing', icon: CreditCard },
+    { name: 'Clinic Settings', path: '/clinic-admin/settings', icon: Settings },
+  ];
+
   return (
-    <div className="flex h-screen bg-light">
+    <div className="flex h-screen bg-page font-sans text-text-primary">
       {/* Sidebar */}
-      <aside className="w-64 bg-dark text-white flex flex-col">
-        <div className="p-6 border-b border-gray-800">
-          <h1 className="text-2xl font-bold text-secondary">Clinexa360</h1>
-          <p className="text-sm text-gray-400 mt-1">Clinic Admin Portal</p>
+      <aside className="w-[260px] bg-white border-r border-border-light flex flex-col z-20">
+        <div className="p-6 h-[88px] flex items-center border-b border-border-light">
+          <h1 className="text-2xl font-bold text-primary-600">Clinexa360</h1>
         </div>
         
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <Link to="/clinic-admin" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/clinic-admin/doctors" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <Stethoscope size={20} />
-            <span>Doctors</span>
-          </Link>
-          <Link to="/clinic-admin/staff" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <Users size={20} />
-            <span>Staff</span>
-          </Link>
-          <Link to="/clinic-admin/patients" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <UserPlus size={20} />
-            <span>Patients</span>
-          </Link>
-          <Link to="/clinic-admin/appointments" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <Calendar size={20} />
-            <span>Appointments</span>
-          </Link>
-          <Link to="/clinic-admin/billing" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <CreditCard size={20} />
-            <span>Billing & POS</span>
-          </Link>
-          <Link to="/clinic-admin/settings" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
-            <Settings size={20} />
-            <span>Clinic Settings</span>
-          </Link>
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">Menu</div>
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path || (item.path !== '/clinic-admin' && location.pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link 
+                key={item.name}
+                to={item.path} 
+                className={`relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors ${
+                  isActive ? 'text-primary bg-primary-light/30 font-medium' : 'text-text-secondary hover:bg-gray-50'
+                }`}
+              >
+                {isActive && (
+                  <div className="absolute left-0 w-[3px] h-10 bg-primary rounded-full" />
+                )}
+                <Icon size={20} className={isActive ? 'text-primary' : 'text-gray-400'} />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-border-light">
+          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">Account</div>
           <button 
             onClick={handleLogout}
-            className="flex items-center space-x-3 p-3 w-full rounded-lg hover:bg-red-900/50 text-red-400 transition-colors"
+            className="flex items-center space-x-3 h-12 px-4 w-full rounded-xl hover:bg-red-50 text-text-secondary hover:text-danger transition-colors"
           >
-            <LogOut size={20} />
+            <LogOut size={20} className="text-gray-400" />
             <span>Logout</span>
           </button>
         </div>
@@ -64,19 +69,40 @@ export default function ClinicAdminLayout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="h-16 bg-white border-b flex items-center justify-between px-8">
-          <h2 className="text-xl font-semibold text-gray-800">{user?.clinic_id?.name || 'Clinic Portal'}</h2>
+        {/* Header */}
+        <header className="h-[88px] bg-white border-b border-border-light flex items-center justify-between px-8 z-10 shrink-0">
+          <h2 className="text-xl font-semibold text-text-primary">
+            {navItems.find(i => location.pathname === i.path || (i.path !== '/clinic-admin' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic Portal'}
+          </h2>
+          
           <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-600">{user?.name}</span>
-            <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-bold uppercase">
-              {user?.name?.substring(0, 2) || 'CA'}
+            <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
+              <Bell size={20} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border-2 border-white"></span>
+            </button>
+            <button className="h-10 px-4 rounded-full border border-border-light bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors hidden md:block">
+              Review Usage
+            </button>
+            <button className="h-10 px-4 rounded-full border border-border-light bg-white text-sm font-medium text-gray-700 flex items-center space-x-2 hover:bg-gray-50 transition-colors hidden md:flex">
+              <Calendar size={16} className="text-gray-400" />
+              <span>Today</span>
+              <ChevronDown size={14} className="text-gray-400" />
+            </button>
+            <div className="h-8 w-px bg-border-light mx-2 hidden sm:block"></div>
+            <div className="flex items-center space-x-3 cursor-pointer">
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-medium text-text-primary">{user?.name}</p>
+                <p className="text-xs text-text-secondary">Clinic Admin</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold uppercase border border-primary-200">
+                {user?.name?.substring(0, 2) || 'CA'}
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 overflow-auto p-8 bg-gray-50">
+        {/* Page Content Container */}
+        <div className="flex-1 overflow-auto p-8 bg-page">
           <Outlet />
         </div>
       </main>
