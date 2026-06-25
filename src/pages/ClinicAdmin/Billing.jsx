@@ -6,6 +6,7 @@ export default function Billing() {
   const [bills, setBills] = useState([]);
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -14,6 +15,7 @@ export default function Billing() {
   const [formData, setFormData] = useState({
     patient_id: '',
     appointment_id: '',
+    doctor_id: '',
     amount: '',
     payment_mode: 'Cash',
     status: 'Pending'
@@ -37,12 +39,14 @@ export default function Billing() {
 
   const fetchDropdowns = async () => {
     try {
-      const [resPatients, resAppointments] = await Promise.all([
+      const [resPatients, resAppointments, resDoctors] = await Promise.all([
         api.get('/patients'),
-        api.get('/appointments')
+        api.get('/appointments'),
+        api.get('/clinic-admin/doctors')
       ]);
       setPatients(resPatients.data);
       setAppointments(resAppointments.data);
+      setDoctors(resDoctors.data);
     } catch (error) {
       console.error('Error fetching dropdowns:', error);
     }
@@ -54,6 +58,7 @@ export default function Billing() {
       setFormData({
         patient_id: bill.patient_id?._id || bill.patient_id || '',
         appointment_id: bill.appointment_id?._id || bill.appointment_id || '',
+        doctor_id: bill.doctor_id?._id || bill.doctor_id || '',
         amount: bill.amount || '',
         payment_mode: bill.payment_mode || 'Cash',
         status: bill.status || 'Pending'
@@ -63,12 +68,22 @@ export default function Billing() {
       setFormData({
         patient_id: '',
         appointment_id: '',
+        doctor_id: '',
         amount: '',
         payment_mode: 'Cash',
         status: 'Pending'
       });
     }
     setIsModalOpen(true);
+  };
+
+  const handleAppointmentChange = (aptId) => {
+    const selectedApt = appointments.find(apt => apt._id === aptId);
+    setFormData(prev => ({
+      ...prev,
+      appointment_id: aptId,
+      doctor_id: selectedApt ? (selectedApt.doctor_id?._id || selectedApt.doctor_id || '') : prev.doctor_id
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -87,6 +102,9 @@ export default function Billing() {
 
     if (formData.appointment_id) {
       payload.appointment_id = formData.appointment_id;
+    }
+    if (formData.doctor_id) {
+      payload.doctor_id = formData.doctor_id;
     }
 
     try {
@@ -118,6 +136,11 @@ export default function Billing() {
     const invoiceNum = bill.invoice_number || `INV-${bill._id.slice(-6).toUpperCase()}`;
     const dateStr = new Date(bill.createdAt).toLocaleDateString();
     
+    // Find doctor details
+    const doctorName = bill.doctor_id?.name 
+      ? `Dr. ${bill.doctor_id.name}` 
+      : (bill.appointment_id?.doctor_id?.name ? `Dr. ${bill.appointment_id.doctor_id.name}` : 'N/A');
+
     printWindow.document.write(`
       <html>
         <head>
@@ -155,6 +178,7 @@ export default function Billing() {
             <div>
               <strong>Invoice Details:</strong><br>
               Date: ${dateStr}<br>
+              Doctor: ${doctorName}<br>
               Payment Method: ${bill.payment_mode || '-'}<br>
               Status: ${bill.status || '-'}
             </div>
@@ -383,7 +407,7 @@ export default function Billing() {
                 <select 
                   required
                   value={formData.patient_id} 
-                  onChange={e => setFormData({...formData, patient_id: e.target.value})}
+                  onChange={e => setFormData({...formData, patient_id: e.target.value, appointment_id: '', doctor_id: ''})}
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
                 >
                   <option value="">Select Patient...</option>
@@ -397,7 +421,7 @@ export default function Billing() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Linked Appointment (Optional)</label>
                 <select 
                   value={formData.appointment_id} 
-                  onChange={e => setFormData({...formData, appointment_id: e.target.value})}
+                  onChange={e => handleAppointmentChange(e.target.value)}
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
                 >
                   <option value="">Direct POS (No Appointment)</option>
@@ -409,6 +433,20 @@ export default function Billing() {
                       </option>
                     ))
                   }
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor (Optional)</label>
+                <select 
+                  value={formData.doctor_id} 
+                  onChange={e => setFormData({...formData, doctor_id: e.target.value})}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
+                >
+                  <option value="">Select Doctor...</option>
+                  {doctors.map(d => (
+                    <option key={d._id} value={d._id}>Dr. {d.name} ({d.specialization})</option>
+                  ))}
                 </select>
               </div>
 
