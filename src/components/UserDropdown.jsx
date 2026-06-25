@@ -26,6 +26,18 @@ export default function UserDropdown({ user, handleLogout, roleName }) {
     timeoutId = setTimeout(() => setIsOpen(false), 200);
   };
 
+  // Determine the base path for the profile link based on role
+  const rolePathMap = {
+    SuperAdmin: '/superadmin',
+    ClinicAdmin: '/clinic-admin',
+    Doctor: '/doctor',
+    Receptionist: '/receptionist',
+    Nurse: '/nurse',
+    LabAssistant: '/lab-assistant',
+    Accountant: '/accountant'
+  };
+  const basePath = user?.role ? rolePathMap[user.role] : '';
+
   return (
     <div className="relative z-50" ref={dropdownRef} onMouseLeave={handleMouseLeave}>
       {/* Trigger */}
@@ -63,8 +75,8 @@ export default function UserDropdown({ user, handleLogout, roleName }) {
           {/* Actions */}
           <div className="p-2">
             <Link 
-              to="#" 
-              onClick={(e) => { e.preventDefault(); setIsOpen(false); }}
+              to={`${basePath}/profile`}
+              onClick={() => setIsOpen(false)}
               className="flex items-center space-x-3 px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
             >
               <User size={18} />

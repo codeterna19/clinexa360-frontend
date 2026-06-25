@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useContext, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
+import Profile from './pages/Shared/Profile';
 import Login from './pages/Login';
 import SidebarLayout from './layouts/SidebarLayout';
 import Dashboard from './pages/SuperAdmin/Dashboard';
@@ -94,6 +95,7 @@ function App() {
           <Route path="plans" element={<Plans />} />
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -112,6 +114,7 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="billing" element={<Billing />} />
           <Route path="settings" element={<ClinicSettings />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -127,6 +130,7 @@ function App() {
           <Route path="appointments" element={<div className="p-4 text-gray-500">Appointments Coming Soon</div>} />
           <Route path="lab-results" element={<div className="p-4 text-gray-500">Lab Results Coming Soon</div>} />
           <Route path="settings" element={<div className="p-4 text-gray-500">Settings Coming Soon</div>} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -141,6 +145,7 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="registration" element={<PatientRegistration />} />
           <Route path="billing" element={<Billing />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -154,6 +159,7 @@ function App() {
           <Route index element={<NurseDashboard />} />
           <Route path="triage" element={<div className="p-4 text-gray-500">Triage Coming Soon</div>} />
           <Route path="patients" element={<div className="p-4 text-gray-500">Patients Coming Soon</div>} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -167,6 +173,7 @@ function App() {
           <Route index element={<LabAssistantDashboard />} />
           <Route path="requests" element={<div className="p-4 text-gray-500">Lab Requests Coming Soon</div>} />
           <Route path="results" element={<div className="p-4 text-gray-500">Lab Results Coming Soon</div>} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -181,6 +188,7 @@ function App() {
           <Route path="invoices" element={<div className="p-4 text-gray-500">Invoices Coming Soon</div>} />
           <Route path="payroll" element={<div className="p-4 text-gray-500">Payroll Coming Soon</div>} />
           <Route path="reports" element={<div className="p-4 text-gray-500">Reports Coming Soon</div>} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>
