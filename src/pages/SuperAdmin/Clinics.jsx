@@ -33,7 +33,6 @@ export default function Clinics() {
     adminPhone: '',
     adminPassword: ''
   });
-
   useEffect(() => {
     fetchClinics();
   }, []);
@@ -105,7 +104,6 @@ export default function Clinics() {
       alert(error.response?.data?.message || 'Error updating clinic');
     }
   };
-
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
     try {
@@ -293,7 +291,6 @@ export default function Clinics() {
           </div>
         </div>
       )}
-
       {/* Edit Clinic Modal */}
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-gray-900/50 p-4">

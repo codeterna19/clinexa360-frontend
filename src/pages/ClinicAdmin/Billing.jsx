@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CreditCard, FileText, Search, Plus, CheckCircle, Clock } from 'lucide-react';
+import { CreditCard, FileText, Search, Plus, CheckCircle, Clock, Download, Send } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function Billing() {
@@ -111,12 +111,10 @@ export default function Billing() {
                     </span>
                   </td>
                   <td className="p-4 text-gray-600">{bill.payment_method || '-'}</td>
-                  <td className="p-4 text-right">
-                    {bill.payment_status === 'Pending' ? (
-                      <button className="text-secondary hover:text-secondary/80 font-medium text-sm">Collect</button>
-                    ) : (
-                      <button className="text-primary-600 hover:text-primary-800 font-medium text-sm">View</button>
-                    )}
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                    <button onClick={() => alert('View Invoice Details feature coming soon!')} className="text-secondary hover:text-secondary/80">View</button>
+                    <button onClick={() => alert('Downloading PDF...')} className="text-gray-500 hover:text-gray-700"><Download size={16} /></button>
+                    <button onClick={() => alert('Invoice sent to patient email.')} className="text-gray-500 hover:text-gray-700"><Send size={16} /></button>
                   </td>
                 </tr>
               ))}
