@@ -14,6 +14,7 @@ import ClinicAdminLayout from './layouts/ClinicAdminLayout';
 import ClinicAdminDashboard from './pages/ClinicAdmin/ClinicAdminDashboard';
 import Doctors from './pages/ClinicAdmin/Doctors';
 import Staff from './pages/ClinicAdmin/Staff';
+import Patients from './pages/ClinicAdmin/Patients';
 import Shifts from './pages/ClinicAdmin/Shifts';
 import Appointments from './pages/ClinicAdmin/Appointments';
 import Billing from './pages/ClinicAdmin/Billing';
@@ -80,6 +81,7 @@ function App() {
           <Route index element={<ClinicAdminDashboard />} />
           <Route path="doctors" element={<Doctors />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="patients" element={<Patients />} />
           <Route path="shifts" element={<Shifts />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="billing" element={<Billing />} />

@@ -33,6 +33,10 @@ export default function ClinicAdminLayout() {
             <Users size={20} />
             <span>Staff</span>
           </Link>
+          <Link to="/clinic-admin/patients" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
+            <Users size={20} />
+            <span>Patients</span>
+          </Link>
           <Link to="/clinic-admin/shifts" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
             <Clock size={20} />
             <span>Shifts</span>
