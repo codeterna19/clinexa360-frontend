@@ -1,24 +1,38 @@
 @import "tailwindcss";
+@import "@fontsource/inter";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-900: #1e3a8a;
+  --color-primary: #7F56D9;
+  --color-primary-light: #F3EEFF;
+  --color-primary-50: #F3EEFF;
+  --color-primary-100: #E2D7FC;
+  --color-primary-200: #C9B3F9;
+  --color-primary-500: #7F56D9;
+  --color-primary-600: #6941C6;
+  --color-primary-700: #53389E;
   
-  --color-secondary: #10b981;
-  --color-dark: #0f172a;
-  --color-light: #f8fafc;
+  --color-secondary: #0080FC;
+  
+  --color-dark: #040F1F;
+  --color-light: #FFFFFF;
+  --color-page: #F8F9FC;
+  
+  --color-text-primary: #040F1F;
+  --color-text-secondary: #495771;
+  
+  --color-border-light: #EDF0F5;
+  --color-danger: #FB3737;
   
   --font-sans: "Inter", sans-serif;
+  
+  --shadow-subtle: 0 2px 8px rgba(0,0,0,0.03);
+  --shadow-primary: 0 4px 10px rgba(127,86,217,0.2);
 }
 
 @layer base {
   body {
-    background-color: var(--color-light);
-    color: var(--color-dark);
+    background-color: var(--color-page);
+    color: var(--color-text-primary);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }

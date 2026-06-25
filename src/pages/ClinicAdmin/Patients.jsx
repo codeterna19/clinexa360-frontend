@@ -171,12 +171,12 @@ export default function Patients() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Patient Management</h1>
-          <p className="text-gray-500 mt-1">Add, update, and manage clinic patient profiles</p>
+          <h1 className="text-2xl font-bold text-text-primary">Patient Management</h1>
+          <p className="text-text-secondary mt-1">Add, update, and manage clinic patient profiles</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="bg-primary-600 text-white px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
+          className="bg-primary text-white h-11 px-6 rounded-full font-medium flex items-center space-x-2 hover:bg-primary-600 transition-all shadow-primary"
         >
           <Plus size={20} />
           <span>Add Patient</span>
@@ -185,43 +185,43 @@ export default function Patients() {
 
       {/* Patient Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center space-x-4">
-          <div className="bg-primary-50 text-primary-600 p-3 rounded-lg"><User size={24} /></div>
+        <div className="bg-white border border-border-light rounded-[16px] p-6 flex items-center space-x-4 shadow-subtle">
+          <div className="bg-primary-50 text-primary p-3 rounded-lg"><User size={24} /></div>
           <div>
-            <h4 className="font-medium text-gray-500">Total Patients</h4>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{patients.length}</p>
+            <h4 className="font-medium text-text-secondary">Total Patients</h4>
+            <p className="text-2xl font-bold text-text-primary mt-1">{patients.length}</p>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center space-x-4">
+        <div className="bg-white border border-border-light rounded-[16px] p-6 flex items-center space-x-4 shadow-subtle">
           <div className="bg-green-50 text-green-600 p-3 rounded-lg"><CheckCircle size={24} /></div>
           <div>
-            <h4 className="font-medium text-gray-500">Active Patients</h4>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{activeCount}</p>
+            <h4 className="font-medium text-text-secondary">Active Patients</h4>
+            <p className="text-2xl font-bold text-text-primary mt-1">{activeCount}</p>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center space-x-4">
+        <div className="bg-white border border-border-light rounded-[16px] p-6 flex items-center space-x-4 shadow-subtle">
           <div className="bg-red-50 text-red-600 p-3 rounded-lg"><ShieldAlert size={24} /></div>
           <div>
-            <h4 className="font-medium text-gray-500">Allergy/Critical Records</h4>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{criticalCount}</p>
+            <h4 className="font-medium text-text-secondary">Allergy/Critical Records</h4>
+            <p className="text-2xl font-bold text-text-primary mt-1">{criticalCount}</p>
           </div>
         </div>
       </div>
 
       {/* Patients Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-          <h3 className="font-semibold text-lg text-gray-900">Registered Patients</h3>
+      <div className="bg-white rounded-[20px] border border-border-light overflow-hidden shadow-subtle">
+        <div className="p-6 border-b border-border-light flex justify-between items-center">
+          <h3 className="font-semibold text-lg text-text-primary">Registered Patients</h3>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input 
               type="text" 
-              placeholder="Search by name, phone, email..." 
+              placeholder="Search..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white w-64"
+              className="pl-11 pr-4 h-12 w-[220px] bg-page rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
             />
           </div>
         </div>
@@ -229,42 +229,42 @@ export default function Patients() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-sm font-semibold tracking-wider">
-                <th className="p-4">Name</th>
-                <th className="p-4">Contact Info</th>
-                <th className="p-4">Gender & Age</th>
-                <th className="p-4">Blood Group</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
+              <tr className="border-b border-border-light text-slate-500 text-xs font-semibold tracking-wide uppercase">
+                <th className="p-4 font-semibold">Name</th>
+                <th className="p-4 font-semibold">Contact Info</th>
+                <th className="p-4 font-semibold">Gender & Age</th>
+                <th className="p-4 font-semibold">Blood Group</th>
+                <th className="p-4 font-semibold">Status</th>
+                <th className="p-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border-light">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="p-10 text-center text-gray-500">Loading patients database...</td>
+                  <td colSpan="6" className="p-10 text-center text-text-secondary">Loading patients database...</td>
                 </tr>
               ) : filteredPatients.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-16 text-center text-gray-400">No patient records found</td>
+                  <td colSpan="6" className="p-16 text-center text-text-secondary">No patient records found</td>
                 </tr>
               ) : (
                 filteredPatients.map((p) => (
-                  <tr key={p._id} className="hover:bg-gray-50 transition-colors group">
+                  <tr key={p._id} className="h-[72px] hover:bg-slate-50 transition-colors group">
                     <td className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-100 to-primary-200 text-primary-700 flex items-center justify-center font-bold text-md shadow-sm border border-primary-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-sm">
                           {p.name?.charAt(0) || 'P'}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{p.name}</p>
-                          <span className="text-xxs text-gray-400">ID: {p._id.slice(-6).toUpperCase()}</span>
+                          <h4 className="font-medium text-text-primary text-sm">{p.name}</h4>
+                          <p className="text-xs text-text-secondary mt-0.5">ID: {p._id.slice(-6).toUpperCase()}</p>
                         </div>
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col space-y-1 text-sm">
-                        <span className="flex items-center text-gray-700 font-medium"><Phone size={12} className="text-gray-400 mr-1.5"/> {p.phone}</span>
-                        <span className="flex items-center text-gray-500"><Mail size={12} className="text-gray-400 mr-1.5"/> {p.email}</span>
+                        <span className="flex items-center text-text-secondary"><Phone size={12} className="text-gray-400 mr-1.5"/> {p.phone}</span>
+                        <span className="flex items-center text-text-secondary"><Mail size={12} className="text-gray-400 mr-1.5"/> {p.email}</span>
                       </div>
                     </td>
                     <td className="p-4 text-sm text-gray-700 font-medium">
