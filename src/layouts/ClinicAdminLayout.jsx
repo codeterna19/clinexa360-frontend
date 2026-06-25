@@ -47,7 +47,7 @@ export default function ClinicAdminLayout() {
           </Link>
           <Link to="/clinic-admin/billing" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
             <CreditCard size={20} />
-            <span>Billing & POS</span>
+            <span>Billing & Invoices</span>
           </Link>
           <Link to="/clinic-admin/settings" className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors">
             <Settings size={20} />

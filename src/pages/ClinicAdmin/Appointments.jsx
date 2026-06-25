@@ -1,10 +1,42 @@
 import { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight, Edit2, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Receipt, X } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function Appointments() {
+  const navigate = useNavigate();
+  const [appointments, setAppointments] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => getKolkataDate(new Date()));
+  const [activeTab, setActiveTab] = useState('today'); // 'today', 'selected', 'upcoming', 'previous'
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  
+  const [formData, setFormData] = useState({
+    patient_id: '',
+    doctor_id: '',
+    date: '',
+    time: '10:00',
+    type: 'Consultation',
+    status: 'Pending',
+    description: ''
+  });
+
+  const [quickPatientData, setQuickPatientData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    gender: 'Male',
+    dob: ''
+  });
+
   // Helper to get date in Asia/Kolkata timezone
-  const getKolkataDate = (dateInput = new Date()) => {
+  function getKolkataDate(dateInput = new Date()) {
     try {
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Kolkata',
@@ -22,26 +54,7 @@ export default function Appointments() {
       const d = new Date(dateInput);
       return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
     }
-  };
-
-  const [appointments, setAppointments] = useState([]);
-  const [patients, setPatients] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(() => getKolkataDate(new Date()));
-  const [activeTab, setActiveTab] = useState('today'); // 'today', 'selected', 'upcoming', 'previous'
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({
-    patient_id: '',
-    doctor_id: '',
-    date: '',
-    time: '10:00',
-    type: 'Consultation',
-    status: 'Pending'
-  });
+  }
 
   useEffect(() => {
     fetchAppointments();
@@ -135,7 +148,7 @@ export default function Appointments() {
     }
   };
 
-  const handleOpenModal = (apt = null) => {
+  const handleOpenModal = (apt = null, defaultPatientId = '') => {
     if (apt) {
       setEditingId(apt._id);
 
@@ -155,7 +168,8 @@ export default function Appointments() {
         date: formattedDate,
         time: apt.time || '10:00',
         type: apt.type || 'Consultation',
-        status: apt.status || 'Pending'
+        status: apt.status || 'Pending',
+        description: apt.description || ''
       });
     } else {
       setEditingId(null);
@@ -168,12 +182,13 @@ export default function Appointments() {
       const formattedDate = `${year}-${month}-${day}`;
 
       setFormData({
-        patient_id: '',
+        patient_id: defaultPatientId,
         doctor_id: '',
         date: formattedDate,
         time: '10:00',
         type: 'Consultation',
-        status: 'Pending'
+        status: 'Pending',
+        description: ''
       });
     }
     setIsModalOpen(true);
@@ -183,6 +198,10 @@ export default function Appointments() {
     e.preventDefault();
     if (!formData.patient_id || !formData.doctor_id || !formData.date || !formData.time) {
       alert("Please fill all fields");
+      return;
+    }
+    if (formData.type === 'Direct' && !formData.description.trim()) {
+      alert("Description/Reason is required for Direct Appointments");
       return;
     }
 
@@ -207,6 +226,52 @@ export default function Appointments() {
       } catch (error) {
         alert(error.response?.data?.message || 'Error deleting appointment');
       }
+    }
+  };
+
+  const handleCollectPayment = (apt) => {
+    navigate('/clinic-admin/billing', { 
+      state: { 
+        prefillPatientId: apt.patient_id?._id || apt.patient_id,
+        prefillAptId: apt._id,
+        prefillDoctorId: apt.doctor_id?._id || apt.doctor_id,
+        prefillAmount: 500 // default mock amount
+      } 
+    });
+  };
+
+  const handleQuickPatientSubmit = async (e) => {
+    e.preventDefault();
+    if (!quickPatientData.name || !quickPatientData.phone || !quickPatientData.email || !quickPatientData.gender || !quickPatientData.dob) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      const payload = {
+        ...quickPatientData,
+        password: 'PatientPassword123!',
+        status: 'Active'
+      };
+      const { data } = await api.post('/patients', payload);
+      
+      // Refresh patients list
+      await fetchDoctorsAndPatients();
+      
+      // Reset
+      setQuickPatientData({
+        name: '',
+        phone: '',
+        email: '',
+        gender: 'Male',
+        dob: ''
+      });
+      setIsQuickAddOpen(false);
+
+      // Open booking modal with new patient selected
+      handleOpenModal(null, data._id);
+    } catch (error) {
+      alert(error.response?.data?.message || 'Error registering patient');
     }
   };
 
@@ -247,13 +312,23 @@ export default function Appointments() {
           <h1 className="text-2xl font-bold text-gray-900">Appointments</h1>
           <p className="text-gray-500 mt-1">Manage all clinic consultations and bookings</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          className="bg-primary-600 text-white px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
-        >
-          <Plus size={20} />
-          <span>New Appointment</span>
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            type="button"
+            onClick={() => setIsQuickAddOpen(true)}
+            className="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-gray-50 active:bg-gray-100 transition-colors shadow-sm font-semibold cursor-pointer"
+          >
+            <Plus size={20} />
+            <span>Quick Add Patient</span>
+          </button>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="bg-primary-600 text-white px-4 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm font-semibold cursor-pointer"
+          >
+            <Plus size={20} />
+            <span>New Appointment</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -406,6 +481,11 @@ export default function Appointments() {
                         )}
                         <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 font-semibold">{apt.type}</span>
                       </div>
+                      {apt.description && (
+                        <p className="text-xs text-gray-500 italic mt-2 bg-gray-50 border border-gray-100 rounded px-2 py-1 inline-block">
+                          Note: {apt.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col items-end space-y-2">
@@ -413,6 +493,15 @@ export default function Appointments() {
                       {apt.status}
                     </span>
                     <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {apt.status === 'Completed' && (
+                        <button 
+                          onClick={() => handleCollectPayment(apt)} 
+                          className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                          title="Generate Invoice / Collect Payment"
+                        >
+                          <Receipt size={16} />
+                        </button>
+                      )}
                       <button 
                         onClick={() => handleOpenModal(apt)} 
                         className="p-1.5 text-primary-600 hover:bg-primary-50 rounded transition-colors cursor-pointer"
@@ -436,7 +525,7 @@ export default function Appointments() {
         </div>
       </div>
 
-      {/* Add/Edit Shift Modal */}
+      {/* Book/Edit Appointment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
@@ -444,11 +533,20 @@ export default function Appointments() {
               <h2 className="text-lg font-bold text-gray-900">
                 {editingId ? 'Edit Appointment Details' : 'Book New Appointment'}
               </h2>
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer p-1 rounded hover:bg-gray-100"
+              >
+                <X size={18} />
+              </button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Patient</label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-sm font-semibold text-gray-700">Patient *</label>
+                </div>
                 <select 
                   required
                   value={formData.patient_id} 
@@ -463,7 +561,7 @@ export default function Appointments() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Doctor *</label>
                 <select 
                   required
                   value={formData.doctor_id} 
@@ -479,7 +577,7 @@ export default function Appointments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date *</label>
                   <input 
                     type="date" 
                     required
@@ -489,7 +587,7 @@ export default function Appointments() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time *</label>
                   <input 
                     type="time" 
                     required
@@ -502,7 +600,7 @@ export default function Appointments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type *</label>
                   <select 
                     value={formData.type} 
                     onChange={e => setFormData({...formData, type: e.target.value})}
@@ -511,12 +609,13 @@ export default function Appointments() {
                     <option value="Consultation">Consultation</option>
                     <option value="Follow-up">Follow-up</option>
                     <option value="Telemedicine">Telemedicine</option>
+                    <option value="Direct">Direct Appointment</option>
                   </select>
                 </div>
 
                 {editingId && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status *</label>
                     <select 
                       value={formData.status} 
                       onChange={e => setFormData({...formData, status: e.target.value})}
@@ -532,6 +631,20 @@ export default function Appointments() {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Description / Reason {formData.type === 'Direct' && '*'}
+                </label>
+                <textarea 
+                  required={formData.type === 'Direct'}
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  placeholder={formData.type === 'Direct' ? "Reason for direct appointment (required)..." : "Reason for visit or clinical notes..."}
+                  rows="3"
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white resize-none text-sm font-medium"
+                />
+              </div>
+
               <div className="bg-gray-50 -mx-6 -mb-6 px-6 py-4 border-t border-gray-100 flex justify-end space-x-3 mt-6">
                 <button 
                   type="button"
@@ -545,6 +658,100 @@ export default function Appointments() {
                   className="px-4.5 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-colors text-sm cursor-pointer shadow-sm"
                 >
                   {editingId ? 'Save Changes' : 'Book Appointment'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Add Patient Modal */}
+      {isQuickAddOpen && (
+        <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-5 py-3.5 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+              <h3 className="font-bold text-gray-900">Quick Add Patient</h3>
+              <button 
+                type="button" 
+                onClick={(e) => { e.preventDefault(); setIsQuickAddOpen(false); }} 
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleQuickPatientSubmit} className="p-5 space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name *</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="Patient Name"
+                  value={quickPatientData.name} 
+                  onChange={e => setQuickPatientData({...quickPatientData, name: e.target.value})}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium" 
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Phone *</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="Mobile number"
+                    value={quickPatientData.phone} 
+                    onChange={e => setQuickPatientData({...quickPatientData, phone: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Email *</label>
+                  <input 
+                    type="email" 
+                    required
+                    placeholder="Email address"
+                    value={quickPatientData.email} 
+                    onChange={e => setQuickPatientData({...quickPatientData, email: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Gender *</label>
+                  <select 
+                    value={quickPatientData.gender} 
+                    onChange={e => setQuickPatientData({...quickPatientData, gender: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm font-medium"
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">DOB *</label>
+                  <input 
+                    type="date" 
+                    required
+                    value={quickPatientData.dob} 
+                    onChange={e => setQuickPatientData({...quickPatientData, dob: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium" 
+                  />
+                </div>
+              </div>
+              <div className="bg-gray-50 -mx-5 -mb-5 px-5 py-3.5 border-t border-gray-100 flex justify-end space-x-2 mt-4">
+                <button 
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); setIsQuickAddOpen(false); }}
+                  className="px-3.5 py-1.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition-colors text-xs bg-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="px-3.5 py-1.5 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-xs cursor-pointer"
+                >
+                  Add & Select
                 </button>
               </div>
             </form>

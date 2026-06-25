@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { CreditCard, FileText, Search, Plus, CheckCircle, Clock, Download, Send, Edit2, Trash2, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Receipt, FileText, Search, Plus, CheckCircle, Clock, Download, Send, Edit2, Trash2, X } from 'lucide-react';
 import api from '../../api/axios';
 
 export default function Billing() {
+  const location = useLocation();
   const [bills, setBills] = useState([]);
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -25,6 +27,21 @@ export default function Billing() {
     fetchBills();
     fetchDropdowns();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.prefillPatientId) {
+      setFormData({
+        patient_id: location.state.prefillPatientId,
+        appointment_id: location.state.prefillAptId || '',
+        doctor_id: location.state.prefillDoctorId || '',
+        amount: location.state.prefillAmount || '',
+        payment_mode: 'Cash',
+        status: 'Pending'
+      });
+      setIsModalOpen(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const fetchBills = async () => {
     try {
@@ -136,7 +153,6 @@ export default function Billing() {
     const invoiceNum = bill.invoice_number || `INV-${bill._id.slice(-6).toUpperCase()}`;
     const dateStr = new Date(bill.createdAt).toLocaleDateString();
     
-    // Find doctor details
     const doctorName = bill.doctor_id?.name 
       ? `Dr. ${bill.doctor_id.name}` 
       : (bill.appointment_id?.doctor_id?.name ? `Dr. ${bill.appointment_id.doctor_id.name}` : 'N/A');
@@ -255,7 +271,7 @@ export default function Billing() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing & POS</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Billing & Invoices</h1>
           <p className="text-gray-500 mt-1">Generate invoices and collect payments</p>
         </div>
         <button 
@@ -271,13 +287,13 @@ export default function Billing() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div 
           onClick={() => handleOpenModal()}
-          className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+          className="bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl p-6 text-white shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
         >
           <div>
-            <h3 className="font-semibold text-lg">Quick Collect</h3>
-            <p className="text-green-100 text-sm mt-1">Generate POS bills directly</p>
+            <h3 className="font-semibold text-lg">Quick Invoice</h3>
+            <p className="text-indigo-100 text-sm mt-1">Generate invoices directly</p>
           </div>
-          <CreditCard size={32} className="opacity-80" />
+          <Receipt size={32} className="opacity-80" />
         </div>
         
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center space-x-4">
@@ -388,13 +404,13 @@ export default function Billing() {
         </div>
       </div>
 
-      {/* POS Billing Modal */}
+      {/* Billing Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-900">
-                {editingId ? 'Edit Invoice Details' : 'Generate New POS Invoice'}
+                {editingId ? 'Edit Invoice Details' : 'Generate New Invoice'}
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <X size={20} />
@@ -424,7 +440,7 @@ export default function Billing() {
                   onChange={e => handleAppointmentChange(e.target.value)}
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer"
                 >
-                  <option value="">Direct POS (No Appointment)</option>
+                  <option value="">Direct Billing (No Appointment)</option>
                   {appointments
                     .filter(apt => apt.patient_id?._id === formData.patient_id || apt.patient_id === formData.patient_id)
                     .map(apt => (
