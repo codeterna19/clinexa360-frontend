@@ -3,12 +3,33 @@ import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight,
 import api from '../../api/axios';
 
 export default function Appointments() {
+  // Helper to get date in Asia/Kolkata timezone
+  const getKolkataDate = (dateInput = new Date()) => {
+    try {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      });
+      const parts = formatter.formatToParts(dateInput);
+      const map = {};
+      parts.forEach(p => {
+        map[p.type] = p.value;
+      });
+      return new Date(parseInt(map.year), parseInt(map.month) - 1, parseInt(map.day), 0, 0, 0, 0);
+    } catch (e) {
+      const d = new Date(dateInput);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+    }
+  };
+
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => getKolkataDate(new Date()));
   const [activeTab, setActiveTab] = useState('today'); // 'today', 'selected', 'upcoming', 'previous'
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,12 +91,10 @@ export default function Appointments() {
            date1.getDate() === date2.getDate();
   };
 
-  // Timezone-safe DB date parser (using UTC parts to prevent offset shift)
+  // Timezone-safe DB date parser (pinned to Asia/Kolkata timezone)
   const parseDbDate = (dateStr) => {
     if (!dateStr) return null;
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return null;
-    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    return getKolkataDate(new Date(dateStr));
   };
 
   // Calendar Logic
@@ -107,8 +126,7 @@ export default function Appointments() {
     if (day) {
       const newD = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       setSelectedDate(newD);
-      const todayDate = new Date();
-      todayDate.setHours(0,0,0,0);
+      const todayDate = getKolkataDate(new Date());
       if (isSameDay(newD, todayDate)) {
         setActiveTab('today');
       } else {
@@ -192,9 +210,8 @@ export default function Appointments() {
     }
   };
 
-  // Setup tab filter timestamps
-  const todayDate = new Date();
-  todayDate.setHours(0,0,0,0);
+  // Setup tab filter timestamps (pinned to Asia/Kolkata timezone)
+  const todayDate = getKolkataDate(new Date());
 
   const tomorrowDate = new Date(todayDate);
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
