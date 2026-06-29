@@ -690,7 +690,7 @@ export default function Appointments() {
                   />
                 </div>
 
-                <div>
+                <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type *</label>
                   <select 
                     value={formData.type} 
@@ -704,8 +704,8 @@ export default function Appointments() {
                   </select>
                 </div>
 
-                {editingId ? (
-                  <div>
+                {editingId && (
+                  <div className="col-span-1 md:col-span-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status *</label>
                     <select 
                       value={formData.status} 
@@ -719,8 +719,6 @@ export default function Appointments() {
                       <option value="No Show">No Show</option>
                     </select>
                   </div>
-                ) : (
-                  <div></div>
                 )}
 
                 <div className="col-span-1 md:col-span-2">

@@ -175,25 +175,36 @@ export default function Billing() {
           <title>Invoice - ${invoiceNum}</title>
           <style>
             body { font-family: sans-serif; padding: 40px; color: #333; }
-            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; }
-            .title { font-size: 24px; font-weight: bold; color: #1e3a8a; }
-            .details { margin: 30px 0; display: flex; justify-content: space-between; }
+            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 24px; align-items: center; }
+            .details { margin: 30px 0; display: flex; justify-content: space-between; font-size: 14px; line-height: 1.5; }
             .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            .table th, .table td { padding: 12px; border: 1px solid #eee; text-align: left; }
-            .table th { background-color: #f9f9f9; }
-            .total { margin-top: 30px; text-align: right; font-size: 20px; font-weight: bold; }
-            .footer { margin-top: 50px; text-align: center; color: #777; font-size: 14px; }
+            .table th, .table td { padding: 12px; border: 1px solid #eee; text-align: left; font-size: 14px; }
+            .table th { background-color: #f8fafc; color: #475569; font-weight: 700; }
+            .total { margin-top: 30px; text-align: right; font-size: 20px; font-weight: bold; color: #0080FC; }
+            .footer { margin-top: 60px; text-align: center; color: #94a3b8; font-size: 13px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
           </style>
         </head>
         <body>
           <div class="header">
-            <div>
-              <div class="title">CLINEXA 360</div>
-              <div>Your Premium Clinic Management Partner</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="10" fill="#0080FC"/>
+                <path d="M20 10V30M10 20H30" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="20" cy="20" r="6" fill="#0080FC" />
+                <path d="M16 20L19 17L21 23L24 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div>
+                <div style="font-size: 24px; font-weight: 850; color: #0F172A; font-family: sans-serif; letter-spacing: -0.5px; line-height: 1;">
+                  Clinexa<span style="color: #0080FC;">360</span>
+                </div>
+                <div style="font-size: 11px; font-weight: 600; color: #64748B; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">
+                  Clinic Management Partner
+                </div>
+              </div>
             </div>
-            <div>
-              <div style="font-size: 20px; font-weight: bold; text-align: right; color: #1e3a8a;">INVOICE</div>
-              <div style="text-align: right; font-weight: bold;">${invoiceNum}</div>
+            <div style="text-align: right;">
+              <div style="font-size: 22px; font-weight: 800; color: #0080FC; font-family: sans-serif; letter-spacing: 0.5px;">INVOICE</div>
+              <div style="font-size: 14px; font-weight: 700; color: #475569; margin-top: 4px;">${invoiceNum}</div>
             </div>
           </div>
           <div class="details">
