@@ -16,6 +16,7 @@ export default function ClinicAdminLayout() {
     navigate('/login');
   };
 
+  const navItems = [
     { name: 'Dashboard', path: '/clinic-admin', icon: LayoutDashboard },
     { name: 'Doctors', path: '/clinic-admin/doctors', icon: Stethoscope, feature: 'Doctors' },
     { name: 'Staff', path: '/clinic-admin/staff', icon: Users, feature: 'Staff Management' },
