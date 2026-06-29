@@ -19,7 +19,7 @@ export default function NurseLayout() {
   const navItems = [
     { name: 'Dashboard', path: '/nurse', icon: LayoutDashboard },
     { name: 'Triage / Vitals', path: '/nurse/triage', icon: Activity, feature: 'Triage' },
-    { name: 'Patients', path: '/nurse/patients', icon: Users, feature: 'Patients' },
+    { name: 'Patients', path: '/nurse/patients', icon: Users },
   ];
 
   const visibleNavItems = navItems.filter(item => !item.feature || hasFeatureAccess(user, item.feature));

@@ -18,8 +18,8 @@ export default function DoctorLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/doctor', icon: LayoutDashboard },
-    { name: 'Patient EMR', path: '/doctor/emr', icon: Stethoscope, feature: 'Patients' }, // Or EMR
-    { name: 'Appointments', path: '/doctor/appointments', icon: Calendar, feature: 'Appointments' },
+    { name: 'Patient EMR', path: '/doctor/emr', icon: Stethoscope }, // Or EMR
+    { name: 'Appointments', path: '/doctor/appointments', icon: Calendar },
     { name: 'Lab Results', path: '/doctor/lab-results', icon: Activity, feature: 'Lab' },
     { name: 'Settings', path: '/doctor/settings', icon: Settings },
   ];

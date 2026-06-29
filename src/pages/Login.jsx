@@ -146,9 +146,16 @@ export default function Login() {
             </div>
             
             <div className="mt-4 pt-4 border-t border-border-light text-xs text-center text-text-secondary">
-              <p className="font-semibold mb-1">Demo Accounts:</p>
-              <p>SuperAdmin: admin@clinexa360.com / password123</p>
-              <p>ClinicAdmin: clinicadmin@citycare.com / password123</p>
+              <p className="font-semibold mb-3">Quick Demo Logins:</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <button type="button" onClick={() => { setEmail('admin@clinexa360.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer">Super Admin</button>
+                <button type="button" onClick={() => { setEmail('clinicadmin@citycare.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer">Clinic Admin</button>
+                <button type="button" onClick={() => { setEmail('doctor@abcclinic.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer">Doctor</button>
+                <button type="button" onClick={() => { setEmail('reception@abcclinic.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer">Receptionist</button>
+                <button type="button" onClick={() => { setEmail('nurse@abcclinic.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer">Nurse</button>
+                <button type="button" onClick={() => { setEmail('lab@abcclinic.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer">Lab Assistant</button>
+                <button type="button" onClick={() => { setEmail('accountant@abcclinic.com'); setPassword('password123'); }} className="px-2 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-text-primary transition-colors cursor-pointer col-span-2 sm:col-span-3">Accountant</button>
+              </div>
             </div>
           </form>
         </div>

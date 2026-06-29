@@ -18,11 +18,11 @@ export default function ClinicAdminLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/clinic-admin', icon: LayoutDashboard },
-    { name: 'Doctors', path: '/clinic-admin/doctors', icon: Stethoscope, feature: 'Doctors' },
-    { name: 'Staff', path: '/clinic-admin/staff', icon: Users, feature: 'Staff Management' },
-    { name: 'Patients', path: '/clinic-admin/patients', icon: Users, feature: 'Patients' },
-    { name: 'Shifts', path: '/clinic-admin/shifts', icon: Clock, feature: 'Shifts' },
-    { name: 'Appointments', path: '/clinic-admin/appointments', icon: Calendar, feature: 'Appointments' },
+    { name: 'Doctors', path: '/clinic-admin/doctors', icon: Stethoscope },
+    { name: 'Staff', path: '/clinic-admin/staff', icon: Users },
+    { name: 'Patients', path: '/clinic-admin/patients', icon: Users },
+    { name: 'Shifts', path: '/clinic-admin/shifts', icon: Clock },
+    { name: 'Appointments', path: '/clinic-admin/appointments', icon: Calendar },
     { name: 'Billing & Invoices', path: '/clinic-admin/billing', icon: CreditCard, feature: 'Billing' },
   ];
 

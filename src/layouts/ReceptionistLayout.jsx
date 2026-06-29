@@ -18,8 +18,8 @@ export default function ReceptionistLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/receptionist', icon: LayoutDashboard },
-    { name: 'Patient Management', path: '/receptionist/patients', icon: Users, feature: 'Patients' },
-    { name: 'Appointments', path: '/receptionist/appointments', icon: Calendar, feature: 'Appointments' },
+    { name: 'Patient Management', path: '/receptionist/patients', icon: Users },
+    { name: 'Appointments', path: '/receptionist/appointments', icon: Calendar },
     { name: 'Billing', path: '/receptionist/billing', icon: CreditCard, feature: 'Billing' },
     { name: 'Settings', path: '/receptionist/settings', icon: Settings },
   ];
