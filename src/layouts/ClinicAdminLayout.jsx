@@ -4,6 +4,7 @@ import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
 import Header from '../components/Header';
+import { hasFeatureAccess } from '../utils/featureAccess';
 
 export default function ClinicAdminLayout() {
   const { logout, user } = useContext(AuthContext);
@@ -15,15 +16,16 @@ export default function ClinicAdminLayout() {
     navigate('/login');
   };
 
-  const navItems = [
     { name: 'Dashboard', path: '/clinic-admin', icon: LayoutDashboard },
-    { name: 'Doctors', path: '/clinic-admin/doctors', icon: Stethoscope },
-    { name: 'Staff', path: '/clinic-admin/staff', icon: Users },
-    { name: 'Patients', path: '/clinic-admin/patients', icon: Users },
-    { name: 'Shifts', path: '/clinic-admin/shifts', icon: Clock },
-    { name: 'Appointments', path: '/clinic-admin/appointments', icon: Calendar },
-    { name: 'Billing & Invoices', path: '/clinic-admin/billing', icon: CreditCard },
+    { name: 'Doctors', path: '/clinic-admin/doctors', icon: Stethoscope, feature: 'Doctors' },
+    { name: 'Staff', path: '/clinic-admin/staff', icon: Users, feature: 'Staff Management' },
+    { name: 'Patients', path: '/clinic-admin/patients', icon: Users, feature: 'Patients' },
+    { name: 'Shifts', path: '/clinic-admin/shifts', icon: Clock, feature: 'Shifts' },
+    { name: 'Appointments', path: '/clinic-admin/appointments', icon: Calendar, feature: 'Appointments' },
+    { name: 'Billing & Invoices', path: '/clinic-admin/billing', icon: CreditCard, feature: 'Billing' },
   ];
+
+  const visibleNavItems = navItems.filter(item => !item.feature || hasFeatureAccess(user, item.feature));
 
   return (
     <div className="flex h-screen bg-page font-sans text-text-primary">
@@ -35,7 +37,7 @@ export default function ClinicAdminLayout() {
         
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">Menu</div>
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = location.pathname === item.path || (item.path !== '/clinic-admin' && location.pathname.startsWith(item.path));
             const Icon = item.icon;
             return (
@@ -64,7 +66,7 @@ export default function ClinicAdminLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <Header 
-          title={navItems.find(i => location.pathname === i.path || (i.path !== '/clinic-admin' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic Portal'} 
+          title={visibleNavItems.find(i => location.pathname === i.path || (i.path !== '/clinic-admin' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic Portal'} 
           user={user} 
           handleLogout={handleLogout} 
           roleName="Clinic Admin" 

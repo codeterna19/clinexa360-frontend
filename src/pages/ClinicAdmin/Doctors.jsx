@@ -59,7 +59,7 @@ export default function Doctors() {
     name: '', email: '', phone: '', password: '',
     qualification: '', specialization: '', registration_number: '', consultation_fee: '', 
     available_timings: [
-      { days: [], start: '10:00', end: '18:00' }
+      { days: [], start: '10:00', end: '18:00', has_break: false, break_start: '13:00', break_end: '14:00' }
     ]
   });
 
@@ -97,7 +97,10 @@ export default function Doctors() {
           timings = timings.map(slot => ({
             days: slot.days || [],
             start: slot.start || slot.start_time || '10:00',
-            end: slot.end || slot.end_time || '18:00'
+            end: slot.end || slot.end_time || '18:00',
+            has_break: slot.has_break || false,
+            break_start: slot.break_start || '13:00',
+            break_end: slot.break_end || '14:00'
           }));
       }
 
@@ -112,7 +115,7 @@ export default function Doctors() {
       setFormData({
         name: '', email: '', phone: '', password: '',
         qualification: '', specialization: '', registration_number: '', consultation_fee: '', 
-        available_timings: [{ days: [], start_time: '10:00', end_time: '18:00' }]
+        available_timings: [{ days: [], start: '10:00', end: '18:00', has_break: false, break_start: '13:00', break_end: '14:00' }]
       });
     }
     setShowPassword(false);
@@ -123,7 +126,7 @@ export default function Doctors() {
   const handleAddSlot = () => {
     setFormData(prev => ({
       ...prev,
-      available_timings: [...prev.available_timings, { days: [], start: '10:00', end: '18:00' }]
+      available_timings: [...prev.available_timings, { days: [], start: '10:00', end: '18:00', has_break: false, break_start: '13:00', break_end: '14:00' }]
     }));
   };
 
@@ -577,6 +580,33 @@ export default function Doctors() {
                                 onChange={val => handleTimingChange(index, 'end', val)}
                               />
                             </div>
+                          </div>
+
+                          <div className="pt-2 border-t border-gray-200 mt-2">
+                            <label className="flex items-center space-x-2 cursor-pointer mb-3">
+                              <input 
+                                type="checkbox" 
+                                checked={slot.has_break || false}
+                                onChange={(e) => handleTimingChange(index, 'has_break', e.target.checked)}
+                                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 w-4 h-4 cursor-pointer"
+                              />
+                              <span className="text-sm font-semibold text-gray-700">Add Break (Lunch/Rest)</span>
+                            </label>
+                            
+                            {slot.has_break && (
+                              <div className="flex items-center space-x-2.5 w-full bg-white p-2 rounded-lg border border-gray-100 shadow-sm animate-in fade-in duration-200">
+                                <span className="text-xs font-bold text-gray-500 w-12">BREAK</span>
+                                <TimeSelect 
+                                  value={slot.break_start || '13:00'} 
+                                  onChange={val => handleTimingChange(index, 'break_start', val)}
+                                />
+                                <span className="text-gray-400 font-medium text-xs">to</span>
+                                <TimeSelect 
+                                  value={slot.break_end || '14:00'} 
+                                  onChange={val => handleTimingChange(index, 'break_end', val)}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}

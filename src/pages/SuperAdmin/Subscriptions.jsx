@@ -229,8 +229,8 @@ export default function Subscriptions() {
                       <div className="bg-slate-50 p-4 rounded-[20px] border border-border-light mt-2">
                         <h4 className="text-sm font-bold text-text-primary border-b border-border-light pb-2 mb-3">Included Features</h4>
                         <div className="space-y-2">
-                          {globalPlans.find(p => p._id === formData.subscriptionPlan).features.map(featureId => {
-                            const feature = globalFeatures.find(f => f._id === featureId);
+                          {globalPlans.find(p => p._id === formData.subscriptionPlan).features.map(feat => {
+                            const feature = typeof feat === 'object' && feat._id ? feat : globalFeatures.find(f => f._id === feat);
                             if (!feature) return null;
                             return (
                               <div key={feature._id} className="flex items-center text-sm font-medium text-text-secondary">

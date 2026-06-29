@@ -1,18 +1,30 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Users, CreditCard, Settings } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
 import Header from '../components/Header';
+import { hasFeatureAccess } from '../utils/featureAccess';
 
 export default function ReceptionistLayout() {
   const { logout, user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const navItems = [
+    { name: 'Dashboard', path: '/receptionist', icon: LayoutDashboard },
+    { name: 'Patient Management', path: '/receptionist/patients', icon: Users, feature: 'Patients' },
+    { name: 'Appointments', path: '/receptionist/appointments', icon: Calendar, feature: 'Appointments' },
+    { name: 'Billing', path: '/receptionist/billing', icon: CreditCard, feature: 'Billing' },
+    { name: 'Settings', path: '/receptionist/settings', icon: Settings },
+  ];
+
+  const visibleNavItems = navItems.filter(item => !item.feature || hasFeatureAccess(user, item.feature));
 
   return (
     <div className="flex h-screen bg-page font-sans text-text-primary">
@@ -24,26 +36,25 @@ export default function ReceptionistLayout() {
         
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">Receptionist</div>
-          <Link to="/receptionist" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/receptionist/patients" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Users size={20} />
-            <span>Patient Management</span>
-          </Link>
-          <Link to="/receptionist/appointments" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Calendar size={20} />
-            <span>Appointments</span>
-          </Link>
-          <Link to="/receptionist/billing" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <CreditCard size={20} />
-            <span>Billing</span>
-          </Link>
-          <Link to="/receptionist/settings" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
+          {visibleNavItems.map((item) => {
+            const isActive = location.pathname === item.path || (item.path !== '/receptionist' && location.pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link 
+                key={item.name}
+                to={item.path} 
+                className={`relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors ${
+                  isActive ? 'text-primary bg-primary-light/30 font-medium' : 'text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary'
+                }`}
+              >
+                {isActive && (
+                  <div className="absolute left-0 w-[3px] h-10 bg-primary rounded-full" />
+                )}
+                <Icon size={20} className={isActive ? 'text-primary' : 'text-gray-400'} />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-border-light text-center text-xs text-gray-400 font-medium">
@@ -54,7 +65,7 @@ export default function ReceptionistLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <Header 
-          title={user?.clinic_id?.name || 'Clinic Portal'} 
+          title={visibleNavItems.find(i => location.pathname === i.path || (i.path !== '/receptionist' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic Portal'} 
           user={user} 
           handleLogout={handleLogout} 
           roleName="Receptionist" 

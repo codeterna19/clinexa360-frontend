@@ -1,18 +1,30 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Stethoscope, Calendar, Activity, Settings } from 'lucide-react';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
 import Header from '../components/Header';
+import { hasFeatureAccess } from '../utils/featureAccess';
 
 export default function DoctorLayout() {
   const { logout, user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const navItems = [
+    { name: 'Dashboard', path: '/doctor', icon: LayoutDashboard },
+    { name: 'Patient EMR', path: '/doctor/emr', icon: Stethoscope, feature: 'Patients' }, // Or EMR
+    { name: 'Appointments', path: '/doctor/appointments', icon: Calendar, feature: 'Appointments' },
+    { name: 'Lab Results', path: '/doctor/lab-results', icon: Activity, feature: 'Lab' },
+    { name: 'Settings', path: '/doctor/settings', icon: Settings },
+  ];
+
+  const visibleNavItems = navItems.filter(item => !item.feature || hasFeatureAccess(user, item.feature));
 
   return (
     <div className="flex h-screen bg-page font-sans text-text-primary">
@@ -24,26 +36,25 @@ export default function DoctorLayout() {
         
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">Doctor Portal</div>
-          <Link to="/doctor" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <LayoutDashboard size={20} />
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/doctor/emr" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Stethoscope size={20} />
-            <span>Patient EMR</span>
-          </Link>
-          <Link to="/doctor/appointments" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Calendar size={20} />
-            <span>Appointments</span>
-          </Link>
-          <Link to="/doctor/lab-results" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Activity size={20} />
-            <span>Lab Results</span>
-          </Link>
-          <Link to="/doctor/settings" className="relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary">
-            <Settings size={20} />
-            <span>Settings</span>
-          </Link>
+          {visibleNavItems.map((item) => {
+            const isActive = location.pathname === item.path || (item.path !== '/doctor' && location.pathname.startsWith(item.path));
+            const Icon = item.icon;
+            return (
+              <Link 
+                key={item.name}
+                to={item.path} 
+                className={`relative flex items-center space-x-3 h-12 px-4 rounded-xl transition-colors ${
+                  isActive ? 'text-primary bg-primary-light/30 font-medium' : 'text-text-secondary hover:bg-slate-50 focus:bg-primary-light/30 focus:text-primary'
+                }`}
+              >
+                {isActive && (
+                  <div className="absolute left-0 w-[3px] h-10 bg-primary rounded-full" />
+                )}
+                <Icon size={20} className={isActive ? 'text-primary' : 'text-gray-400'} />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-border-light text-center text-xs text-gray-400 font-medium">
@@ -54,7 +65,7 @@ export default function DoctorLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <Header 
-          title={user?.clinic_id?.name || 'Clinic'} 
+          title={visibleNavItems.find(i => location.pathname === i.path || (i.path !== '/doctor' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic'} 
           user={user} 
           handleLogout={handleLogout} 
           roleName="Doctor" 
