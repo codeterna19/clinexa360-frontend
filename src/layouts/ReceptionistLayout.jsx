@@ -3,6 +3,7 @@ import { LayoutDashboard, Calendar, Users, CreditCard, Settings } from 'lucide-r
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
+import Header from '../components/Header';
 
 export default function ReceptionistLayout() {
   const { logout, user } = useContext(AuthContext);
@@ -52,14 +53,12 @@ export default function ReceptionistLayout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="h-[88px] bg-white border-b border-border-light flex items-center justify-between px-8 z-10 shrink-0">
-          <h2 className="text-xl font-semibold text-text-primary">{user?.clinic_id?.name || 'Clinic Portal'}</h2>
-          
-          <div className="flex items-center space-x-4">
-            <UserDropdown user={user} handleLogout={handleLogout} roleName="Receptionist" />
-          </div>
-        </header>
+        <Header 
+          title={user?.clinic_id?.name || 'Clinic Portal'} 
+          user={user} 
+          handleLogout={handleLogout} 
+          roleName="Receptionist" 
+        />
 
         {/* Page Content */}
         <div className="flex-1 overflow-auto p-8 bg-page">

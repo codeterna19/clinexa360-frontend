@@ -3,6 +3,7 @@ import { LayoutDashboard, Stethoscope, Users, Calendar, CreditCard, Clock, Bell,
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import UserDropdown from '../components/UserDropdown';
+import Header from '../components/Header';
 
 export default function ClinicAdminLayout() {
   const { logout, user } = useContext(AuthContext);
@@ -62,29 +63,12 @@ export default function ClinicAdminLayout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-[88px] bg-white border-b border-border-light flex items-center justify-between px-8 z-10 shrink-0">
-          <h2 className="text-xl font-semibold text-text-primary">
-            {navItems.find(i => location.pathname === i.path || (i.path !== '/clinic-admin' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic Portal'}
-          </h2>
-          
-          <div className="flex items-center space-x-4">
-            <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border-2 border-white"></span>
-            </button>
-            <button className="h-10 px-4 rounded-full border border-border-light bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors hidden md:block">
-              Review Usage
-            </button>
-            <button className="h-10 px-4 rounded-full border border-border-light bg-white text-sm font-medium text-gray-700 flex items-center space-x-2 hover:bg-gray-50 transition-colors hidden md:flex">
-              <Calendar size={16} className="text-gray-400" />
-              <span>Today</span>
-              <ChevronDown size={14} className="text-gray-400" />
-            </button>
-            <div className="h-8 w-px bg-border-light mx-2 hidden sm:block"></div>
-            <UserDropdown user={user} handleLogout={handleLogout} roleName="Clinic Admin" />
-          </div>
-        </header>
+        <Header 
+          title={navItems.find(i => location.pathname === i.path || (i.path !== '/clinic-admin' && location.pathname.startsWith(i.path)))?.name || user?.clinic_id?.name || 'Clinic Portal'} 
+          user={user} 
+          handleLogout={handleLogout} 
+          roleName="Clinic Admin" 
+        />
 
         {/* Page Content Container */}
         <div className="flex-1 overflow-auto p-8 bg-page">
