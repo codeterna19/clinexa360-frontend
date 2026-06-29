@@ -3,34 +3,64 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar as CalendarIcon, Clock, User, Plus, ChevronLeft, ChevronRight, Edit2, Trash2, Receipt, X } from 'lucide-react';
 import api from '../../api/axios';
 
-const TimeSelect = ({ value, onChange }) => {
-  const [hour, minute] = value ? value.split(':') : ['10', '00'];
-  let h = parseInt(hour || '10', 10);
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  if (h > 12) h -= 12;
-  if (h === 0) h = 12;
-  const strH = h.toString().padStart(2, '0');
-  
-  const handleTimeChange = (newH, newM, newAmpm) => {
-    let finalH = parseInt(newH, 10);
-    if (newAmpm === 'PM' && finalH !== 12) finalH += 12;
-    if (newAmpm === 'AM' && finalH === 12) finalH = 0;
-    onChange(`${finalH.toString().padStart(2, '0')}:${newM}`);
-  };
+const Autocomplete = ({ options, value, onChange, placeholder, renderOption }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (value) {
+      const selected = options.find(o => o.value === value);
+      if (selected && selected.label !== searchTerm) {
+        setSearchTerm(selected.label);
+      }
+    } else {
+      setSearchTerm('');
+    }
+  }, [value, options]);
+
+  const filteredOptions = options.filter(o => {
+    const term = searchTerm.toLowerCase();
+    const labelMatch = o.label && o.label.toLowerCase().includes(term);
+    const searchMatch = o.searchString && o.searchString.toLowerCase().includes(term);
+    return labelMatch || searchMatch;
+  });
 
   return (
-    <div className="flex items-center space-x-1 border border-gray-300 rounded-lg p-2.5 bg-white focus-within:ring-2 focus-within:ring-primary-500 w-full h-[46px]">
-       <select value={strH} onChange={e => handleTimeChange(e.target.value, minute, ampm)} className="p-1 outline-none bg-transparent font-medium text-gray-700 cursor-pointer">
-         {Array.from({length: 12}, (_, i) => (i+1).toString().padStart(2, '0')).map(hr => <option key={hr} value={hr}>{hr}</option>)}
-       </select>
-       <span className="text-gray-400 font-bold">:</span>
-       <select value={minute} onChange={e => handleTimeChange(strH, e.target.value, ampm)} className="p-1 outline-none bg-transparent font-medium text-gray-700 cursor-pointer">
-         {['00', '10', '15', '20', '30', '40', '45', '50'].map(m => <option key={m} value={m}>{m}</option>)}
-       </select>
-       <select value={ampm} onChange={e => handleTimeChange(strH, minute, e.target.value)} className="p-1 outline-none bg-gray-100 rounded text-sm font-semibold text-gray-700 cursor-pointer ml-1">
-         <option value="AM">AM</option>
-         <option value="PM">PM</option>
-       </select>
+    <div className="relative w-full">
+      <input
+        type="text"
+        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm font-medium"
+        placeholder={placeholder}
+        value={searchTerm}
+        onChange={e => {
+          setSearchTerm(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+      />
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((opt, i) => (
+              <div 
+                key={i} 
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-700"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setSearchTerm(opt.label);
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+              >
+                {renderOption ? renderOption(opt) : opt.label}
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-2 text-sm text-gray-500">No results found</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -632,7 +662,7 @@ export default function Appointments() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <label className="block text-sm font-semibold text-gray-700">Patient *</label>
+                    <label className="block text-sm font-semibold text-gray-700">Patient</label>
                     <button 
                       type="button" 
                       onClick={() => setIsQuickAddOpen(true)} 
@@ -641,38 +671,48 @@ export default function Appointments() {
                       <Plus size={12} className="mr-0.5" /> Quick Add
                     </button>
                   </div>
-                  <select 
-                    required
-                    value={formData.patient_id} 
-                    onChange={e => setFormData({...formData, patient_id: e.target.value})}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm font-medium text-gray-700"
-                  >
-                    <option value="">Select Patient...</option>
-                    {patients.map(p => (
-                      <option key={p._id} value={p._id}>{p.name}</option>
-                    ))}
-                  </select>
+                  <Autocomplete
+                    options={patients.map(p => ({
+                      value: p._id,
+                      label: p.name,
+                      searchString: p.phone || ''
+                    }))}
+                    value={formData.patient_id}
+                    onChange={val => setFormData({...formData, patient_id: val})}
+                    placeholder="Search patient by name or phone..."
+                    renderOption={(opt) => (
+                      <div>
+                        <div className="font-medium">{opt.label}</div>
+                        {opt.searchString && <div className="text-xs text-gray-500">{opt.searchString}</div>}
+                      </div>
+                    )}
+                  />
                 </div>
 
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
-                    <label className="block text-sm font-semibold text-gray-700">Doctor *</label>
+                    <label className="block text-sm font-semibold text-gray-700">Doctor</label>
                   </div>
-                  <select 
-                    required
-                    value={formData.doctor_id} 
-                    onChange={e => setFormData({...formData, doctor_id: e.target.value})}
-                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white cursor-pointer text-sm"
-                  >
-                    <option value="">Select Doctor...</option>
-                    {doctors.map(d => (
-                      <option key={d._id} value={d._id}>Dr. {d.name} ({d.specialization})</option>
-                    ))}
-                  </select>
+                  <Autocomplete
+                    options={doctors.map(d => ({
+                      value: d._id,
+                      label: `Dr. ${d.name}`,
+                      searchString: d.specialization || ''
+                    }))}
+                    value={formData.doctor_id}
+                    onChange={val => setFormData({...formData, doctor_id: val})}
+                    placeholder="Search doctor..."
+                    renderOption={(opt) => (
+                      <div>
+                        <div className="font-medium">{opt.label}</div>
+                        {opt.searchString && <div className="text-xs text-gray-500">{opt.searchString}</div>}
+                      </div>
+                    )}
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Date</label>
                   <input 
                     type="date" 
                     required
@@ -683,15 +723,18 @@ export default function Appointments() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time *</label>
-                  <TimeSelect 
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Time</label>
+                  <input 
+                    type="time" 
+                    required
                     value={formData.time} 
-                    onChange={val => setFormData({...formData, time: val})}
+                    onChange={e => setFormData({...formData, time: e.target.value})}
+                    className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-sm h-[42px]" 
                   />
                 </div>
 
                 <div className="col-span-1 md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Type</label>
                   <select 
                     value={formData.type} 
                     onChange={e => setFormData({...formData, type: e.target.value})}
@@ -706,7 +749,7 @@ export default function Appointments() {
 
                 {editingId && (
                   <div className="col-span-1 md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
                     <select 
                       value={formData.status} 
                       onChange={e => setFormData({...formData, status: e.target.value})}
@@ -723,7 +766,7 @@ export default function Appointments() {
 
                 <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Description / Reason {formData.type === 'Direct' && '*'}
+                    Description / Reason
                   </label>
                   <textarea 
                     required={formData.type === 'Direct'}
@@ -772,7 +815,7 @@ export default function Appointments() {
             </div>
             <form onSubmit={handleQuickPatientSubmit} className="p-5 space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name *</label>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name</label>
                 <input 
                   type="text" 
                   required
@@ -784,7 +827,7 @@ export default function Appointments() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Phone *</label>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Phone</label>
                   <input 
                     type="text" 
                     required
@@ -795,7 +838,7 @@ export default function Appointments() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Email *</label>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
                   <input 
                     type="email" 
                     required
@@ -808,7 +851,7 @@ export default function Appointments() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Gender *</label>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Gender</label>
                   <select 
                     value={quickPatientData.gender} 
                     onChange={e => setQuickPatientData({...quickPatientData, gender: e.target.value})}
@@ -820,7 +863,7 @@ export default function Appointments() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">DOB *</label>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">DOB</label>
                   <input 
                     type="date" 
                     required
